@@ -1,0 +1,64 @@
+$schema: ./schemas/geometry-schema.json
+
+# Compartment outlines for map rendering. Each entry now explicitly references its location code
+# (see gui.view.painting.DeckMapGeometry). R/T (tank compartments 2 and 4) have no entries.
+location-coordinates:
+  - { code: "A", points: [{x: 247, y: 438}, {x: 247, y: 521}, {x: 207, y: 521}, {x: 207, y: 614}, {x: 503, y: 614}, {x: 503, y: 438}] }
+  - { code: "B", points: [{x: 505, y: 480}, {x: 505, y: 614}, {x: 843, y: 614}, {x: 843, y: 480}] }
+  - { code: "C", points: [{x: 845, y: 480}, {x: 845, y: 614}, {x: 1019, y: 614}, {x: 1019, y: 480}] }
+  - { code: "D", points: [{x: 207, y: 264}, {x: 207, y: 414}, {x: 245, y: 414}, {x: 245, y: 301}, {x: 1019, y: 301}, {x: 1019, y: 264}] }
+  - { code: "E", points: [{x: 247, y: 303}, {x: 247, y: 437}, {x: 503, y: 437}, {x: 503, y: 303}] }
+  - { code: "F", points: [{x: 505, y: 303}, {x: 505, y: 478}, {x: 747, y: 478}, {x: 747, y: 303}] }
+  - { code: "G", points: [{x: 749, y: 345}, {x: 749, y: 397}, {x: 803, y: 397}, {x: 803, y: 345}] }
+  - { code: "H", points: [{x: 805, y: 303}, {x: 805, y: 397}, {x: 843, y: 397}, {x: 843, y: 303}] }
+  - { code: "I", points: [{x: 749, y: 303}, {x: 749, y: 343}, {x: 803, y: 343}, {x: 803, y: 303}] }
+  - { code: "J", points: [{x: 207, y: 15}, {x: 207, y: 262}, {x: 1019, y: 262}, {x: 1019, y: 15}] }
+  - { code: "K", points: [{x: 749, y: 399}, {x: 749, y: 438}, {x: 843, y: 438}, {x: 843, y: 399}] }
+  - { code: "L", points: [{x: 749, y: 440}, {x: 749, y: 478}, {x: 843, y: 478}, {x: 843, y: 440}] }
+  - { code: "M", points: [{x: 845, y: 345}, {x: 845, y: 478}, {x: 939, y: 478}, {x: 939, y: 345}] }
+  - { code: "N", points: [{x: 845, y: 303}, {x: 845, y: 343}, {x: 939, y: 343}, {x: 939, y: 303}] }
+  - { code: "O", points: [{x: 941, y: 303}, {x: 941, y: 390}, {x: 1019, y: 390}, {x: 1019, y: 303}] }
+  - { code: "P", points: [{x: 941, y: 392}, {x: 941, y: 478}, {x: 1019, y: 478}, {x: 1019, y: 392}] }
+  - { code: "Q", points: [{x: 207, y: 416}, {x: 207, y: 519}, {x: 245, y: 519}, {x: 245, y: 416}] }
+
+# Bulkhead outlines for fire-line rendering. Each entry now explicitly references its link code
+# (see gui.view.painting.DeckMapGeometry).
+border-coordinates:
+  - { link: "AB", points: [{x: 504, y: 479}, {x: 504, y: 615}] }
+  - { link: "AE", points: [{x: 246, y: 437}, {x: 504, y: 437}] }
+  - { link: "AF", points: [{x: 504, y: 437}, {x: 504, y: 479}] }
+  - { link: "AQ", points: [{x: 206, y: 520}, {x: 246, y: 520}, {x: 246, y: 437}] }
+  - { link: "BC", points: [{x: 844, y: 479}, {x: 844, y: 615}] }
+  - { link: "BF", points: [{x: 504, y: 479}, {x: 748, y: 479}] }
+  - { link: "BL", points: [{x: 748, y: 479}, {x: 844, y: 479}] }
+  - { link: "CM", points: [{x: 844, y: 479}, {x: 940, y: 479}] }
+  - { link: "CP", points: [{x: 940, y: 479}, {x: 1020, y: 479}] }
+  - { link: "DE", points: [{x: 246, y: 437}, {x: 246, y: 302}, {x: 504, y: 302}] }
+  - { link: "DF", points: [{x: 504, y: 302}, {x: 748, y: 302}] }
+  - { link: "DH", points: [{x: 804, y: 302}, {x: 844, y: 302}] }
+  - { link: "DJ", points: [{x: 206, y: 263}, {x: 1020, y: 263}] }
+  - { link: "DI", points: [{x: 748, y: 302}, {x: 804, y: 302}] }
+  - { link: "DN", points: [{x: 844, y: 302}, {x: 940, y: 302}] }
+  - { link: "DO", points: [{x: 940, y: 302}, {x: 1020, y: 302}] }
+  - { link: "DQ", points: [{x: 206, y: 415}, {x: 246, y: 415}] }
+  - { link: "EF", points: [{x: 504, y: 302}, {x: 504, y: 437}] }
+  - { link: "EQ", points: [{x: 246, y: 415}, {x: 246, y: 437}] }
+  - { link: "FG", points: [{x: 748, y: 344}, {x: 748, y: 398}] }
+  - { link: "FI", points: [{x: 748, y: 302}, {x: 748, y: 344}] }
+  - { link: "FK", points: [{x: 748, y: 398}, {x: 748, y: 437}] }
+  - { link: "FL", points: [{x: 748, y: 437}, {x: 748, y: 479}] }
+  - { link: "GH", points: [{x: 804, y: 344}, {x: 804, y: 398}] }
+  - { link: "GI", points: [{x: 748, y: 344}, {x: 804, y: 344}] }
+  - { link: "GK", points: [{x: 748, y: 398}, {x: 844, y: 398}] }
+  - { link: "HI", points: [{x: 804, y: 302}, {x: 804, y: 344}] }
+  - { link: "HK", points: [{x: 804, y: 398}, {x: 844, y: 398}] }
+  - { link: "HM", points: [{x: 844, y: 344}, {x: 844, y: 398}] }
+  - { link: "HN", points: [{x: 844, y: 302}, {x: 844, y: 344}] }
+  - { link: "KL", points: [{x: 748, y: 437}, {x: 844, y: 437}] }
+  - { link: "KM", points: [{x: 844, y: 398}, {x: 844, y: 437}] }
+  - { link: "LM", points: [{x: 844, y: 437}, {x: 844, y: 479}] }
+  - { link: "MN", points: [{x: 844, y: 344}, {x: 940, y: 344}] }
+  - { link: "MO", points: [{x: 940, y: 344}, {x: 940, y: 391}] }
+  - { link: "MP", points: [{x: 940, y: 391}, {x: 940, y: 479}] }
+  - { link: "NO", points: [{x: 940, y: 302}, {x: 940, y: 344}] }
+  - { link: "OP", points: [{x: 940, y: 391}, {x: 1020, y: 391}] }

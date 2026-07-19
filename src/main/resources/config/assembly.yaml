@@ -1,0 +1,20 @@
+$schema: ./schemas/assembly-schema.json
+
+group-layers:
+  - { key: "FIRE_SENSOR_GROUP", initialVisibility: true }
+  - { key: "FIRE_BUTTON_GROUP", initialVisibility: true }
+  - { key: "EVACUATION_GROUP", initialVisibility: false }
+  - { key: "VENTILATION_GROUP", initialVisibility: false }
+  - { key: "DOOR_SEALING_GROUP", initialVisibility: false }
+  - { key: "EXPLOSION_GROUP", initialVisibility: false }
+  - { key: "FLAMMABLE_GROUP", initialVisibility: false }
+  - { key: "MACHINERY_DAMAGE_GROUP", initialVisibility: false }
+  - { key: "FRONTLINE_BALANCE_GROUP", initialVisibility: false }
+  - { key: "HYDRANT_OUTLETS_GROUP", initialVisibility: false }
+  - { key: "FIREFIGHTING_STEPS_GROUP", initialVisibility: false }
+
+hydrant-button-groups:
+  - { key: "FIRE_HOSE", variableWidth: false }
+  - { key: "HYDR_EXT", variableWidth: false }
+  - { key: "HYDR_EXT_B", variableWidth: false }
+  - { key: "HYDR_EXT_B_FROM", variableWidth: true }

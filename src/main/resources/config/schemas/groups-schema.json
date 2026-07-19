@@ -1,0 +1,881 @@
+{
+  "$schema" : "http://json-schema.org/draft-07/schema#",
+  "definitions" : {
+    "DoorButtonGroupConfig" : {
+      "type" : "object",
+      "properties" : {
+        "items" : {
+          "type" : [ "array", "null" ],
+          "items" : {
+            "$ref" : "#/definitions/DoorGlyphSpec"
+          }
+        },
+        "size" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/Sizes"
+          } ]
+        },
+        "fireRatedSize()" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/Size"
+          } ]
+        },
+        "items()" : {
+          "type" : [ "array", "null" ],
+          "items" : {
+            "$ref" : "#/definitions/DoorGlyphSpec"
+          }
+        },
+        "size()" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/Sizes"
+          } ]
+        },
+        "standardSize()" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/Size"
+          } ]
+        }
+      },
+      "additionalProperties" : false
+    },
+    "DoorDirection" : {
+      "type" : "string",
+      "enum" : [ "TOP", "BOTTOM" ]
+    },
+    "DoorGlyphSpec" : {
+      "type" : "object",
+      "properties" : {
+        "align" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/DoorSide"
+          } ]
+        },
+        "code" : {
+          "type" : [ "string", "null" ]
+        },
+        "orientation" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/DoorOrientation"
+          } ]
+        },
+        "valign" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/DoorDirection"
+          } ]
+        },
+        "align()" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/DoorSide"
+          } ]
+        },
+        "code()" : {
+          "type" : [ "string", "null" ]
+        },
+        "orientation()" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/DoorOrientation"
+          } ]
+        },
+        "valign()" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/DoorDirection"
+          } ]
+        }
+      },
+      "additionalProperties" : false
+    },
+    "DoorOrientation" : {
+      "type" : "string",
+      "enum" : [ "VERTICAL", "HORISONTAL" ]
+    },
+    "DoorSide" : {
+      "type" : "string",
+      "enum" : [ "LEFT", "RIGHT" ]
+    },
+    "ExplosionButtonSpec" : {
+      "type" : "object",
+      "properties" : {
+        "locationCode" : {
+          "type" : [ "string", "null" ]
+        },
+        "position" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/Point"
+          } ]
+        },
+        "locationCode()" : {
+          "type" : [ "string", "null" ]
+        },
+        "position()" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/Point"
+          } ]
+        }
+      },
+      "additionalProperties" : false
+    },
+    "FireSensorButtonSpec" : {
+      "type" : "object",
+      "properties" : {
+        "position" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/Point"
+          } ]
+        },
+        "sensorCode" : {
+          "type" : [ "string", "null" ]
+        },
+        "position()" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/Point"
+          } ]
+        },
+        "sensorCode()" : {
+          "type" : [ "string", "null" ]
+        }
+      },
+      "additionalProperties" : false
+    },
+    "FirefightingStepGroupSpec" : {
+      "type" : "object",
+      "properties" : {
+        "locationCode" : {
+          "type" : [ "string", "null" ]
+        },
+        "position" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/Point"
+          } ]
+        },
+        "size" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/HydrantLabelSize"
+          } ]
+        },
+        "locationCode()" : {
+          "type" : [ "string", "null" ]
+        },
+        "position()" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/Point"
+          } ]
+        },
+        "size()" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/HydrantLabelSize"
+          } ]
+        }
+      },
+      "additionalProperties" : false
+    },
+    "FlammableButtonSpec" : {
+      "type" : "object",
+      "properties" : {
+        "locationCode" : {
+          "type" : [ "string", "null" ]
+        },
+        "position" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/Point"
+          } ]
+        },
+        "locationCode()" : {
+          "type" : [ "string", "null" ]
+        },
+        "position()" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/Point"
+          } ]
+        }
+      },
+      "additionalProperties" : false
+    },
+    "FrontlineBalanceGroupSpec" : {
+      "type" : "object",
+      "properties" : {
+        "locationCode" : {
+          "type" : [ "string", "null" ]
+        },
+        "position" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/Point"
+          } ]
+        },
+        "size" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/HydrantLabelSize"
+          } ]
+        },
+        "locationCode()" : {
+          "type" : [ "string", "null" ]
+        },
+        "position()" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/Point"
+          } ]
+        },
+        "size()" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/HydrantLabelSize"
+          } ]
+        }
+      },
+      "additionalProperties" : false
+    },
+    "HydrLabelSpec" : {
+      "type" : "object",
+      "properties" : {
+        "position" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/Point"
+          } ]
+        },
+        "titleCode" : {
+          "type" : [ "string", "null" ]
+        },
+        "position()" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/Point"
+          } ]
+        },
+        "titleCode()" : {
+          "type" : [ "string", "null" ]
+        }
+      },
+      "additionalProperties" : false
+    },
+    "HydrOutletLabelGroupConfig" : {
+      "type" : "object",
+      "properties" : {
+        "baseWidth" : {
+          "type" : "integer"
+        },
+        "height" : {
+          "type" : "integer"
+        },
+        "items" : {
+          "type" : [ "array", "null" ],
+          "items" : {
+            "$ref" : "#/definitions/HydrLabelSpec"
+          }
+        },
+        "widthAdd" : {
+          "type" : "integer"
+        },
+        "baseWidth()" : {
+          "type" : "integer"
+        },
+        "height()" : {
+          "type" : "integer"
+        },
+        "items()" : {
+          "type" : [ "array", "null" ],
+          "items" : {
+            "$ref" : "#/definitions/HydrLabelSpec"
+          }
+        },
+        "widthAdd()" : {
+          "type" : "integer"
+        }
+      },
+      "additionalProperties" : false
+    },
+    "HydrantLabelSize" : {
+      "type" : "string",
+      "enum" : [ "FULL", "SHORT" ]
+    },
+    "HydrantPlacement" : {
+      "type" : "object",
+      "properties" : {
+        "code" : {
+          "type" : [ "string", "null" ]
+        },
+        "count" : {
+          "type" : "integer"
+        },
+        "position" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/Point"
+          } ]
+        },
+        "code()" : {
+          "type" : [ "string", "null" ]
+        },
+        "count()" : {
+          "type" : "integer"
+        },
+        "position()" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/Point"
+          } ]
+        }
+      },
+      "additionalProperties" : false
+    },
+    "HydrantsGroupConfig(FirefightingStepGroupSpec)" : {
+      "type" : "object",
+      "properties" : {
+        "height" : {
+          "type" : "integer"
+        },
+        "items" : {
+          "type" : [ "array", "null" ],
+          "items" : {
+            "$ref" : "#/definitions/FirefightingStepGroupSpec"
+          }
+        },
+        "widthFull" : {
+          "type" : "integer"
+        },
+        "widthShort" : {
+          "type" : "integer"
+        },
+        "height()" : {
+          "type" : "integer"
+        },
+        "items()" : {
+          "type" : [ "array", "null" ],
+          "items" : {
+            "$ref" : "#/definitions/FirefightingStepGroupSpec"
+          }
+        },
+        "widthFull()" : {
+          "type" : "integer"
+        },
+        "widthShort()" : {
+          "type" : "integer"
+        }
+      },
+      "additionalProperties" : false
+    },
+    "HydrantsGroupConfig(FrontlineBalanceGroupSpec)" : {
+      "type" : "object",
+      "properties" : {
+        "height" : {
+          "type" : "integer"
+        },
+        "items" : {
+          "type" : [ "array", "null" ],
+          "items" : {
+            "$ref" : "#/definitions/FrontlineBalanceGroupSpec"
+          }
+        },
+        "widthFull" : {
+          "type" : "integer"
+        },
+        "widthShort" : {
+          "type" : "integer"
+        },
+        "height()" : {
+          "type" : "integer"
+        },
+        "items()" : {
+          "type" : [ "array", "null" ],
+          "items" : {
+            "$ref" : "#/definitions/FrontlineBalanceGroupSpec"
+          }
+        },
+        "widthFull()" : {
+          "type" : "integer"
+        },
+        "widthShort()" : {
+          "type" : "integer"
+        }
+      },
+      "additionalProperties" : false
+    },
+    "MachineryDamageButtonSpec" : {
+      "type" : "object",
+      "properties" : {
+        "locationCode" : {
+          "type" : [ "string", "null" ]
+        },
+        "position" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/Point"
+          } ]
+        },
+        "locationCode()" : {
+          "type" : [ "string", "null" ]
+        },
+        "position()" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/Point"
+          } ]
+        }
+      },
+      "additionalProperties" : false
+    },
+    "Point" : {
+      "type" : "object",
+      "properties" : {
+        "x" : {
+          "type" : "integer"
+        },
+        "y" : {
+          "type" : "integer"
+        },
+        "x()" : {
+          "type" : "integer"
+        },
+        "y()" : {
+          "type" : "integer"
+        }
+      },
+      "additionalProperties" : false
+    },
+    "Size" : {
+      "type" : "object",
+      "properties" : {
+        "height" : {
+          "type" : "integer"
+        },
+        "width" : {
+          "type" : "integer"
+        },
+        "height()" : {
+          "type" : "integer"
+        },
+        "width()" : {
+          "type" : "integer"
+        }
+      },
+      "additionalProperties" : false
+    },
+    "Sizes" : {
+      "type" : "object",
+      "properties" : {
+        "fireRated" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/Size"
+          } ]
+        },
+        "standard" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/Size"
+          } ]
+        },
+        "fireRated()" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/Size"
+          } ]
+        },
+        "standard()" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/Size"
+          } ]
+        }
+      },
+      "additionalProperties" : false
+    },
+    "ToggleGroupConfig(ExplosionButtonSpec)" : {
+      "type" : "object",
+      "properties" : {
+        "items" : {
+          "type" : [ "array", "null" ],
+          "items" : {
+            "$ref" : "#/definitions/ExplosionButtonSpec"
+          }
+        },
+        "size" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/Size"
+          } ]
+        },
+        "items()" : {
+          "type" : [ "array", "null" ],
+          "items" : {
+            "$ref" : "#/definitions/ExplosionButtonSpec"
+          }
+        },
+        "size()" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/Size"
+          } ]
+        }
+      },
+      "additionalProperties" : false
+    },
+    "ToggleGroupConfig(FireSensorButtonSpec)" : {
+      "type" : "object",
+      "properties" : {
+        "items" : {
+          "type" : [ "array", "null" ],
+          "items" : {
+            "$ref" : "#/definitions/FireSensorButtonSpec"
+          }
+        },
+        "size" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/Size"
+          } ]
+        },
+        "items()" : {
+          "type" : [ "array", "null" ],
+          "items" : {
+            "$ref" : "#/definitions/FireSensorButtonSpec"
+          }
+        },
+        "size()" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/Size"
+          } ]
+        }
+      },
+      "additionalProperties" : false
+    },
+    "ToggleGroupConfig(FlammableButtonSpec)" : {
+      "type" : "object",
+      "properties" : {
+        "items" : {
+          "type" : [ "array", "null" ],
+          "items" : {
+            "$ref" : "#/definitions/FlammableButtonSpec"
+          }
+        },
+        "size" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/Size"
+          } ]
+        },
+        "items()" : {
+          "type" : [ "array", "null" ],
+          "items" : {
+            "$ref" : "#/definitions/FlammableButtonSpec"
+          }
+        },
+        "size()" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/Size"
+          } ]
+        }
+      },
+      "additionalProperties" : false
+    },
+    "ToggleGroupConfig(MachineryDamageButtonSpec)" : {
+      "type" : "object",
+      "properties" : {
+        "items" : {
+          "type" : [ "array", "null" ],
+          "items" : {
+            "$ref" : "#/definitions/MachineryDamageButtonSpec"
+          }
+        },
+        "size" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/Size"
+          } ]
+        },
+        "items()" : {
+          "type" : [ "array", "null" ],
+          "items" : {
+            "$ref" : "#/definitions/MachineryDamageButtonSpec"
+          }
+        },
+        "size()" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/Size"
+          } ]
+        }
+      },
+      "additionalProperties" : false
+    },
+    "ToggleGroupConfig(VentilationButtonSpec)" : {
+      "type" : "object",
+      "properties" : {
+        "items" : {
+          "type" : [ "array", "null" ],
+          "items" : {
+            "$ref" : "#/definitions/VentilationButtonSpec"
+          }
+        },
+        "size" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/Size"
+          } ]
+        },
+        "items()" : {
+          "type" : [ "array", "null" ],
+          "items" : {
+            "$ref" : "#/definitions/VentilationButtonSpec"
+          }
+        },
+        "size()" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/Size"
+          } ]
+        }
+      },
+      "additionalProperties" : false
+    },
+    "VentilationButtonSpec" : {
+      "type" : "object",
+      "properties" : {
+        "locationCode" : {
+          "type" : [ "string", "null" ]
+        },
+        "position" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/Point"
+          } ]
+        },
+        "locationCode()" : {
+          "type" : [ "string", "null" ]
+        },
+        "position()" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/Point"
+          } ]
+        }
+      },
+      "additionalProperties" : false
+    }
+  },
+  "type" : "object",
+  "properties" : {
+    "door-button-group" : {
+      "anyOf" : [ {
+        "type" : "null"
+      }, {
+        "$ref" : "#/definitions/DoorButtonGroupConfig"
+      } ]
+    },
+    "explosion-group" : {
+      "anyOf" : [ {
+        "type" : "null"
+      }, {
+        "$ref" : "#/definitions/ToggleGroupConfig(ExplosionButtonSpec)"
+      } ]
+    },
+    "fire-sensor-group" : {
+      "anyOf" : [ {
+        "type" : "null"
+      }, {
+        "$ref" : "#/definitions/ToggleGroupConfig(FireSensorButtonSpec)"
+      } ]
+    },
+    "firefighting-step-label-group" : {
+      "anyOf" : [ {
+        "type" : "null"
+      }, {
+        "$ref" : "#/definitions/HydrantsGroupConfig(FirefightingStepGroupSpec)"
+      } ]
+    },
+    "flammable-group" : {
+      "anyOf" : [ {
+        "type" : "null"
+      }, {
+        "$ref" : "#/definitions/ToggleGroupConfig(FlammableButtonSpec)"
+      } ]
+    },
+    "frontline-balance-label-group" : {
+      "anyOf" : [ {
+        "type" : "null"
+      }, {
+        "$ref" : "#/definitions/HydrantsGroupConfig(FrontlineBalanceGroupSpec)"
+      } ]
+    },
+    "hydrant-outlet-label-group" : {
+      "anyOf" : [ {
+        "type" : "null"
+      }, {
+        "$ref" : "#/definitions/HydrOutletLabelGroupConfig"
+      } ]
+    },
+    "hydrantExtConfigs" : {
+      "type" : [ "array", "null" ],
+      "items" : {
+        "$ref" : "#/definitions/HydrantPlacement"
+      }
+    },
+    "hydrantOutConfigs" : {
+      "type" : [ "array", "null" ],
+      "items" : {
+        "$ref" : "#/definitions/HydrantPlacement"
+      }
+    },
+    "machinery-damage-group" : {
+      "anyOf" : [ {
+        "type" : "null"
+      }, {
+        "$ref" : "#/definitions/ToggleGroupConfig(MachineryDamageButtonSpec)"
+      } ]
+    },
+    "ventilation-group" : {
+      "anyOf" : [ {
+        "type" : "null"
+      }, {
+        "$ref" : "#/definitions/ToggleGroupConfig(VentilationButtonSpec)"
+      } ]
+    },
+    "door-button-group()" : {
+      "anyOf" : [ {
+        "type" : "null"
+      }, {
+        "$ref" : "#/definitions/DoorButtonGroupConfig"
+      } ]
+    },
+    "explosion-group()" : {
+      "anyOf" : [ {
+        "type" : "null"
+      }, {
+        "$ref" : "#/definitions/ToggleGroupConfig(ExplosionButtonSpec)"
+      } ]
+    },
+    "fire-sensor-group()" : {
+      "anyOf" : [ {
+        "type" : "null"
+      }, {
+        "$ref" : "#/definitions/ToggleGroupConfig(FireSensorButtonSpec)"
+      } ]
+    },
+    "firefighting-step-label-group()" : {
+      "anyOf" : [ {
+        "type" : "null"
+      }, {
+        "$ref" : "#/definitions/HydrantsGroupConfig(FirefightingStepGroupSpec)"
+      } ]
+    },
+    "flammable-group()" : {
+      "anyOf" : [ {
+        "type" : "null"
+      }, {
+        "$ref" : "#/definitions/ToggleGroupConfig(FlammableButtonSpec)"
+      } ]
+    },
+    "frontline-balance-label-group()" : {
+      "anyOf" : [ {
+        "type" : "null"
+      }, {
+        "$ref" : "#/definitions/HydrantsGroupConfig(FrontlineBalanceGroupSpec)"
+      } ]
+    },
+    "hydrant-outlet-label-group()" : {
+      "anyOf" : [ {
+        "type" : "null"
+      }, {
+        "$ref" : "#/definitions/HydrOutletLabelGroupConfig"
+      } ]
+    },
+    "hydrantExtConfigs()" : {
+      "type" : [ "array", "null" ],
+      "items" : {
+        "$ref" : "#/definitions/HydrantPlacement"
+      }
+    },
+    "hydrantOutConfigs()" : {
+      "type" : [ "array", "null" ],
+      "items" : {
+        "$ref" : "#/definitions/HydrantPlacement"
+      }
+    },
+    "machinery-damage-group()" : {
+      "anyOf" : [ {
+        "type" : "null"
+      }, {
+        "$ref" : "#/definitions/ToggleGroupConfig(MachineryDamageButtonSpec)"
+      } ]
+    },
+    "ventilation-group()" : {
+      "anyOf" : [ {
+        "type" : "null"
+      }, {
+        "$ref" : "#/definitions/ToggleGroupConfig(VentilationButtonSpec)"
+      } ]
+    }
+  },
+  "additionalProperties" : false
+}

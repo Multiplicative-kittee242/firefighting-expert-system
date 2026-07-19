@@ -1,0 +1,1128 @@
+{
+  "$schema" : "http://json-schema.org/draft-07/schema#",
+  "definitions" : {
+    "Border" : {
+      "type" : "object",
+      "properties" : {
+        "length" : {
+          "type" : "number"
+        },
+        "link" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/Link"
+          } ]
+        },
+        "getLength()" : {
+          "type" : "number"
+        },
+        "getLink()" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/Link"
+          } ]
+        }
+      },
+      "additionalProperties" : false
+    },
+    "BorderSpec" : {
+      "type" : "object",
+      "properties" : {
+        "length" : {
+          "type" : "number"
+        },
+        "link" : {
+          "type" : [ "string", "null" ]
+        },
+        "length()" : {
+          "type" : "number"
+        },
+        "link()" : {
+          "type" : [ "string", "null" ]
+        }
+      },
+      "additionalProperties" : false
+    },
+    "CompartmentType" : {
+      "type" : "string",
+      "enum" : [ "POST", "SERVICE", "AUXILIARY", "ENGINE_ROOM", "UNINHABITED" ]
+    },
+    "Door" : {
+      "type" : "object",
+      "properties" : {
+        "from" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/Location"
+          } ]
+        },
+        "to" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/Location"
+          } ]
+        },
+        "getFrom()" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/Location"
+          } ]
+        },
+        "getTo()" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/Location"
+          } ]
+        }
+      },
+      "additionalProperties" : false
+    },
+    "DoorSpec" : {
+      "type" : "object",
+      "properties" : {
+        "fireRated" : {
+          "type" : "boolean"
+        },
+        "from" : {
+          "type" : [ "string", "null" ]
+        },
+        "to" : {
+          "type" : [ "string", "null" ]
+        },
+        "fireRated()" : {
+          "type" : "boolean"
+        },
+        "from()" : {
+          "type" : [ "string", "null" ]
+        },
+        "to()" : {
+          "type" : [ "string", "null" ]
+        }
+      },
+      "additionalProperties" : false
+    },
+    "Entry(String,Boolean)" : {
+      "type" : "object",
+      "properties" : {
+        "getKey()" : {
+          "type" : [ "string", "null" ]
+        },
+        "getValue()" : {
+          "type" : [ "boolean", "null" ]
+        },
+        "setValue(Boolean)" : {
+          "type" : [ "boolean", "null" ]
+        }
+      },
+      "additionalProperties" : false
+    },
+    "EvacuationRoute" : {
+      "type" : "object",
+      "properties" : {
+        "code" : {
+          "type" : [ "string", "null" ]
+        },
+        "from" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/Location"
+          } ]
+        },
+        "to" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/Location"
+          } ]
+        },
+        "getCode()" : {
+          "type" : [ "string", "null" ]
+        },
+        "getFrom()" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/Location"
+          } ]
+        },
+        "getTo()" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/Location"
+          } ]
+        }
+      },
+      "additionalProperties" : false
+    },
+    "EvacuationRouteSpec" : {
+      "type" : "object",
+      "properties" : {
+        "from" : {
+          "type" : [ "string", "null" ]
+        },
+        "to" : {
+          "type" : [ "string", "null" ]
+        },
+        "from()" : {
+          "type" : [ "string", "null" ]
+        },
+        "to()" : {
+          "type" : [ "string", "null" ]
+        }
+      },
+      "additionalProperties" : false
+    },
+    "ExplosiveMaterial" : {
+      "type" : "string",
+      "enum" : [ "CHEMICAL_REAGENT", "DIESEL_OIL", "COMPRESSED_AIR" ]
+    },
+    "Extinguisher" : {
+      "type" : "object",
+      "properties" : {
+        "location" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/Location"
+          } ]
+        },
+        "title" : {
+          "type" : [ "string", "null" ]
+        },
+        "type" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/ExtinguisherType"
+          } ]
+        },
+        "getLocation()" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/Location"
+          } ]
+        },
+        "getTitle()" : {
+          "type" : [ "string", "null" ]
+        },
+        "getType()" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/ExtinguisherType"
+          } ]
+        }
+      },
+      "additionalProperties" : false
+    },
+    "ExtinguisherSpec" : {
+      "type" : "object",
+      "properties" : {
+        "title" : {
+          "type" : [ "string", "null" ]
+        },
+        "type" : {
+          "type" : [ "string", "null" ],
+          "enum" : [ "carbon_dioxide", "air_foam", null ]
+        },
+        "title()" : {
+          "type" : [ "string", "null" ]
+        },
+        "type()" : {
+          "type" : [ "string", "null" ]
+        }
+      },
+      "additionalProperties" : false
+    },
+    "ExtinguisherType" : {
+      "type" : "string",
+      "enum" : [ "CARBON_DIOXIDE", "AIR_FOAM" ]
+    },
+    "FireHoseSpan(HydrantOutlets)" : {
+      "type" : "object",
+      "properties" : {
+        "distance" : {
+          "type" : "number"
+        },
+        "from" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/HydrantOutlets"
+          } ]
+        },
+        "to" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/Link"
+          } ]
+        },
+        "getDistance()" : {
+          "type" : "number"
+        },
+        "getFrom()" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/HydrantOutlets"
+          } ]
+        },
+        "getTo()" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/Link"
+          } ]
+        }
+      },
+      "additionalProperties" : false
+    },
+    "FireHoseSpan(Link)" : {
+      "type" : "object",
+      "properties" : {
+        "distance" : {
+          "type" : "number"
+        },
+        "from" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/Link"
+          } ]
+        },
+        "to" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/Link"
+          } ]
+        },
+        "getDistance()" : {
+          "type" : "number"
+        },
+        "getFrom()" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/Link"
+          } ]
+        },
+        "getTo()" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/Link"
+          } ]
+        }
+      },
+      "additionalProperties" : false
+    },
+    "FireHoseSpanSpec" : {
+      "type" : "object",
+      "properties" : {
+        "distance" : {
+          "type" : "number"
+        },
+        "from" : {
+          "type" : [ "string", "null" ]
+        },
+        "to" : {
+          "type" : [ "string", "null" ]
+        },
+        "distance()" : {
+          "type" : "number"
+        },
+        "from()" : {
+          "type" : [ "string", "null" ]
+        },
+        "to()" : {
+          "type" : [ "string", "null" ]
+        }
+      },
+      "additionalProperties" : false
+    },
+    "FireHoseSpansSpec" : {
+      "type" : "object",
+      "properties" : {
+        "door-to-door" : {
+          "type" : [ "array", "null" ],
+          "items" : {
+            "$ref" : "#/definitions/FireHoseSpanSpec"
+          }
+        },
+        "hydrant-to-door" : {
+          "type" : [ "array", "null" ],
+          "items" : {
+            "$ref" : "#/definitions/FireHoseSpanSpec"
+          }
+        },
+        "door-to-door()" : {
+          "type" : [ "array", "null" ],
+          "items" : {
+            "$ref" : "#/definitions/FireHoseSpanSpec"
+          }
+        },
+        "hydrant-to-door()" : {
+          "type" : [ "array", "null" ],
+          "items" : {
+            "$ref" : "#/definitions/FireHoseSpanSpec"
+          }
+        }
+      },
+      "additionalProperties" : false
+    },
+    "FireSensor" : {
+      "type" : "object",
+      "properties" : {
+        "code" : {
+          "type" : [ "string", "null" ]
+        },
+        "location" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/Location"
+          } ]
+        },
+        "type" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/FireSensorType"
+          } ]
+        },
+        "getCode()" : {
+          "type" : [ "string", "null" ]
+        },
+        "getLocation()" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/Location"
+          } ]
+        },
+        "getType()" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/FireSensorType"
+          } ]
+        }
+      },
+      "additionalProperties" : false
+    },
+    "FireSensorSpec" : {
+      "type" : "object",
+      "properties" : {
+        "code" : {
+          "type" : [ "string", "null" ]
+        },
+        "type" : {
+          "type" : [ "string", "null" ],
+          "enum" : [ "temperature", "combined", "rate_of_rise", null ]
+        },
+        "code()" : {
+          "type" : [ "string", "null" ]
+        },
+        "type()" : {
+          "type" : [ "string", "null" ]
+        }
+      },
+      "additionalProperties" : false
+    },
+    "FireSensorType" : {
+      "type" : "string",
+      "enum" : [ "TEMPERATURE", "COMBINED", "RATE_OF_RISE" ]
+    },
+    "FlammableMaterial" : {
+      "type" : "string",
+      "enum" : [ "MACHINE_OIL", "WORKING_CLOTHES" ]
+    },
+    "HydrantOutletSpec" : {
+      "type" : "object",
+      "properties" : {
+        "outlets" : {
+          "type" : "integer"
+        },
+        "title" : {
+          "type" : [ "string", "null" ]
+        },
+        "outlets()" : {
+          "type" : "integer"
+        },
+        "title()" : {
+          "type" : [ "string", "null" ]
+        }
+      },
+      "additionalProperties" : false
+    },
+    "HydrantOutlets" : {
+      "type" : "object",
+      "properties" : {
+        "location" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/Location"
+          } ]
+        },
+        "outlets" : {
+          "type" : "integer"
+        },
+        "title" : {
+          "type" : [ "string", "null" ]
+        },
+        "getLocation()" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/Location"
+          } ]
+        },
+        "getOutlets()" : {
+          "type" : "integer"
+        },
+        "getTitle()" : {
+          "type" : [ "string", "null" ]
+        }
+      },
+      "additionalProperties" : false
+    },
+    "Link" : {
+      "type" : "object",
+      "properties" : {
+        "code" : {
+          "type" : [ "string", "null" ]
+        },
+        "from" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/Location"
+          } ]
+        },
+        "to" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/Location"
+          } ]
+        },
+        "connects(Location, Location)" : {
+          "type" : "boolean"
+        },
+        "getCode()" : {
+          "type" : [ "string", "null" ]
+        },
+        "getFrom()" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/Location"
+          } ]
+        },
+        "getOtherSide(Location)" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/Location"
+          } ]
+        },
+        "getTo()" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/Location"
+          } ]
+        }
+      },
+      "additionalProperties" : false
+    },
+    "Location" : {
+      "type" : "object",
+      "properties" : {
+        "area" : {
+          "type" : "number"
+        },
+        "code" : {
+          "type" : [ "string", "null" ]
+        },
+        "explosiveMaterial" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/ExplosiveMaterial"
+          } ]
+        },
+        "tank" : {
+          "type" : "integer"
+        },
+        "type" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/CompartmentType"
+          } ]
+        },
+        "ventilationType" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/VentilationType"
+          } ]
+        },
+        "getArea()" : {
+          "type" : "number"
+        },
+        "getBurningMaterial()" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/Optional(FlammableMaterial)"
+          } ]
+        },
+        "getCode()" : {
+          "type" : [ "string", "null" ]
+        },
+        "getExplosiveMaterial()" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/Optional(ExplosiveMaterial)"
+          } ]
+        },
+        "getTank()" : {
+          "type" : "integer"
+        },
+        "getType()" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/CompartmentType"
+          } ]
+        },
+        "getVentilationType()" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/Optional(VentilationType)"
+          } ]
+        },
+        "hasChemicalSuppression()" : {
+          "type" : "boolean"
+        },
+        "hasMachinery()" : {
+          "type" : "boolean"
+        }
+      },
+      "additionalProperties" : false
+    },
+    "LocationSpec" : {
+      "type" : "object",
+      "properties" : {
+        "area" : {
+          "type" : [ "number", "null" ]
+        },
+        "burning" : {
+          "type" : [ "string", "null" ],
+          "enum" : [ "machine_oil", "working_clothes", null ]
+        },
+        "chemical-suppression" : {
+          "type" : [ "boolean", "null" ]
+        },
+        "code" : {
+          "type" : [ "string", "null" ]
+        },
+        "explosive" : {
+          "type" : [ "string", "null" ],
+          "enum" : [ "chemical_reagent", "diesel_oil", "compressed_air", null ]
+        },
+        "machinery" : {
+          "type" : [ "boolean", "null" ]
+        },
+        "tank" : {
+          "type" : [ "integer", "null" ]
+        },
+        "type" : {
+          "type" : [ "string", "null" ],
+          "enum" : [ "post", "service", "auxiliary", "engine_room", "uninhabited", null ]
+        },
+        "ventilation" : {
+          "type" : [ "string", "null" ],
+          "enum" : [ "basic", "smoke_control", "transit", null ]
+        },
+        "area()" : {
+          "type" : [ "number", "null" ]
+        },
+        "burning()" : {
+          "type" : [ "string", "null" ]
+        },
+        "chemical-suppression()" : {
+          "type" : [ "boolean", "null" ]
+        },
+        "code()" : {
+          "type" : [ "string", "null" ]
+        },
+        "explosive()" : {
+          "type" : [ "string", "null" ]
+        },
+        "machinery()" : {
+          "type" : [ "boolean", "null" ]
+        },
+        "tank()" : {
+          "type" : [ "integer", "null" ]
+        },
+        "type()" : {
+          "type" : [ "string", "null" ]
+        },
+        "ventilation()" : {
+          "type" : [ "string", "null" ]
+        }
+      },
+      "additionalProperties" : false
+    },
+    "Map(String,Boolean)" : {
+      "type" : "object",
+      "properties" : {
+        "clear()" : false,
+        "compute(String, BiFunction<Object, Object, Boolean>)" : {
+          "type" : [ "boolean", "null" ]
+        },
+        "computeIfAbsent(String, Function<Object, Boolean>)" : {
+          "type" : [ "boolean", "null" ]
+        },
+        "computeIfPresent(String, BiFunction<Object, Object, Boolean>)" : {
+          "type" : [ "boolean", "null" ]
+        },
+        "containsKey(Object)" : {
+          "type" : "boolean"
+        },
+        "containsValue(Object)" : {
+          "type" : "boolean"
+        },
+        "entrySet()" : {
+          "type" : [ "array", "null" ],
+          "items" : {
+            "$ref" : "#/definitions/Entry(String,Boolean)"
+          }
+        },
+        "forEach(BiConsumer<Object, Object>)" : false,
+        "get(Object)" : {
+          "type" : [ "boolean", "null" ]
+        },
+        "getOrDefault(Object, Boolean)" : {
+          "type" : [ "boolean", "null" ]
+        },
+        "isEmpty()" : {
+          "type" : "boolean"
+        },
+        "keySet()" : {
+          "type" : [ "array", "null" ],
+          "items" : {
+            "type" : "string"
+          }
+        },
+        "merge(String, Boolean, BiFunction<Object, Object, Boolean>)" : {
+          "type" : [ "boolean", "null" ]
+        },
+        "put(String, Boolean)" : {
+          "type" : [ "boolean", "null" ]
+        },
+        "putAll(Map<String, Boolean>)" : false,
+        "putIfAbsent(String, Boolean)" : {
+          "type" : [ "boolean", "null" ]
+        },
+        "remove(Object)" : {
+          "type" : [ "boolean", "null" ]
+        },
+        "remove(Object, Object)" : {
+          "type" : "boolean"
+        },
+        "replace(String, Boolean)" : {
+          "type" : [ "boolean", "null" ]
+        },
+        "replace(String, Boolean, Boolean)" : {
+          "type" : "boolean"
+        },
+        "replaceAll(BiFunction<Object, Object, Boolean>)" : false,
+        "size()" : {
+          "type" : "integer"
+        },
+        "values()" : {
+          "type" : [ "array", "null" ],
+          "items" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "additionalProperties" : false
+    },
+    "Optional(ExplosiveMaterial)" : {
+      "type" : "object",
+      "properties" : {
+        "get()" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/ExplosiveMaterial"
+          } ]
+        },
+        "isPresent()" : {
+          "type" : "boolean"
+        },
+        "orElse(ExplosiveMaterial)" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/ExplosiveMaterial"
+          } ]
+        }
+      },
+      "additionalProperties" : false
+    },
+    "Optional(FlammableMaterial)" : {
+      "type" : "object",
+      "properties" : {
+        "get()" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/FlammableMaterial"
+          } ]
+        },
+        "isPresent()" : {
+          "type" : "boolean"
+        },
+        "orElse(FlammableMaterial)" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/FlammableMaterial"
+          } ]
+        }
+      },
+      "additionalProperties" : false
+    },
+    "Optional(VentilationType)" : {
+      "type" : "object",
+      "properties" : {
+        "get()" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/VentilationType"
+          } ]
+        },
+        "isPresent()" : {
+          "type" : "boolean"
+        },
+        "orElse(VentilationType)" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/VentilationType"
+          } ]
+        }
+      },
+      "additionalProperties" : false
+    },
+    "RawBorder" : {
+      "type" : "object",
+      "properties" : {
+        "length" : {
+          "type" : "number"
+        },
+        "link" : {
+          "type" : [ "string", "null" ]
+        },
+        "length()" : {
+          "type" : "number"
+        },
+        "link()" : {
+          "type" : [ "string", "null" ]
+        }
+      },
+      "additionalProperties" : false
+    },
+    "RawDoor" : {
+      "type" : "object",
+      "properties" : {
+        "from" : {
+          "type" : [ "string", "null" ]
+        },
+        "to" : {
+          "type" : [ "string", "null" ]
+        },
+        "from()" : {
+          "type" : [ "string", "null" ]
+        },
+        "to()" : {
+          "type" : [ "string", "null" ]
+        }
+      },
+      "additionalProperties" : false
+    },
+    "TopologyModel" : {
+      "type" : "object",
+      "properties" : {
+        "allBorders()" : {
+          "type" : [ "array", "null" ],
+          "items" : {
+            "$ref" : "#/definitions/Border"
+          }
+        },
+        "allDoorToDoorFireHoseSpans()" : {
+          "type" : [ "array", "null" ],
+          "items" : {
+            "$ref" : "#/definitions/FireHoseSpan(Link)"
+          }
+        },
+        "allDoors()" : {
+          "type" : [ "array", "null" ],
+          "items" : {
+            "$ref" : "#/definitions/Door"
+          }
+        },
+        "allEvacuationRoutes()" : {
+          "type" : [ "array", "null" ],
+          "items" : {
+            "$ref" : "#/definitions/EvacuationRoute"
+          }
+        },
+        "allExtinguishers()" : {
+          "type" : [ "array", "null" ],
+          "items" : {
+            "$ref" : "#/definitions/Extinguisher"
+          }
+        },
+        "allFireSensors()" : {
+          "type" : [ "array", "null" ],
+          "items" : {
+            "$ref" : "#/definitions/FireSensor"
+          }
+        },
+        "allHydrantOutlets()" : {
+          "type" : [ "array", "null" ],
+          "items" : {
+            "$ref" : "#/definitions/HydrantOutlets"
+          }
+        },
+        "allHydrantToDoorFireHoseSpans()" : {
+          "type" : [ "array", "null" ],
+          "items" : {
+            "$ref" : "#/definitions/FireHoseSpan(HydrantOutlets)"
+          }
+        },
+        "allLinks()" : {
+          "type" : [ "array", "null" ],
+          "items" : {
+            "$ref" : "#/definitions/Link"
+          }
+        },
+        "allLocations()" : {
+          "type" : [ "array", "null" ],
+          "items" : {
+            "$ref" : "#/definitions/Location"
+          }
+        },
+        "evacuationRoute(String)" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/EvacuationRoute"
+          } ]
+        },
+        "extinguisher(String)" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/Extinguisher"
+          } ]
+        },
+        "fireSensor(String)" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/FireSensor"
+          } ]
+        },
+        "hydrantOutlets(String)" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/HydrantOutlets"
+          } ]
+        },
+        "link(String)" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/Link"
+          } ]
+        },
+        "location(String)" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/Location"
+          } ]
+        }
+      },
+      "additionalProperties" : false
+    },
+    "VentilationType" : {
+      "type" : "string",
+      "enum" : [ "BASIC", "SMOKE_CONTROL", "TRANSIT" ]
+    }
+  },
+  "type" : "object",
+  "properties" : {
+    "borders" : {
+      "type" : [ "array", "null" ],
+      "items" : {
+        "$ref" : "#/definitions/BorderSpec"
+      }
+    },
+    "doors" : {
+      "type" : [ "array", "null" ],
+      "items" : {
+        "$ref" : "#/definitions/DoorSpec"
+      }
+    },
+    "evacuation-routes" : {
+      "type" : [ "array", "null" ],
+      "items" : {
+        "$ref" : "#/definitions/EvacuationRouteSpec"
+      }
+    },
+    "extinguishers" : {
+      "type" : [ "array", "null" ],
+      "items" : {
+        "$ref" : "#/definitions/ExtinguisherSpec"
+      }
+    },
+    "fire-hose-spans" : {
+      "anyOf" : [ {
+        "type" : "null"
+      }, {
+        "$ref" : "#/definitions/FireHoseSpansSpec"
+      } ]
+    },
+    "fire-sensor-codes" : {
+      "type" : [ "array", "null" ],
+      "items" : {
+        "$ref" : "#/definitions/FireSensorSpec"
+      }
+    },
+    "hydrant-outlets" : {
+      "type" : [ "array", "null" ],
+      "items" : {
+        "$ref" : "#/definitions/HydrantOutletSpec"
+      }
+    },
+    "location-labels" : {
+      "type" : [ "array", "null" ],
+      "items" : {
+        "$ref" : "#/definitions/LocationSpec"
+      }
+    },
+    "borders()" : {
+      "type" : [ "array", "null" ],
+      "items" : {
+        "$ref" : "#/definitions/BorderSpec"
+      }
+    },
+    "buildTopologyModel()" : {
+      "anyOf" : [ {
+        "type" : "null"
+      }, {
+        "$ref" : "#/definitions/TopologyModel"
+      } ]
+    },
+    "doors()" : {
+      "type" : [ "array", "null" ],
+      "items" : {
+        "$ref" : "#/definitions/DoorSpec"
+      }
+    },
+    "evacuation-routes()" : {
+      "type" : [ "array", "null" ],
+      "items" : {
+        "$ref" : "#/definitions/EvacuationRouteSpec"
+      }
+    },
+    "extinguishers()" : {
+      "type" : [ "array", "null" ],
+      "items" : {
+        "$ref" : "#/definitions/ExtinguisherSpec"
+      }
+    },
+    "fire-hose-spans()" : {
+      "anyOf" : [ {
+        "type" : "null"
+      }, {
+        "$ref" : "#/definitions/FireHoseSpansSpec"
+      } ]
+    },
+    "fire-sensor-codes()" : {
+      "type" : [ "array", "null" ],
+      "items" : {
+        "$ref" : "#/definitions/FireSensorSpec"
+      }
+    },
+    "getBorderCodes()" : {
+      "type" : [ "array", "null" ],
+      "items" : {
+        "type" : "string"
+      }
+    },
+    "getFireRatedByDoorCode()" : {
+      "anyOf" : [ {
+        "type" : "null"
+      }, {
+        "$ref" : "#/definitions/Map(String,Boolean)"
+      } ]
+    },
+    "hydrant-outlets()" : {
+      "type" : [ "array", "null" ],
+      "items" : {
+        "$ref" : "#/definitions/HydrantOutletSpec"
+      }
+    },
+    "location-labels()" : {
+      "type" : [ "array", "null" ],
+      "items" : {
+        "$ref" : "#/definitions/LocationSpec"
+      }
+    },
+    "resolveLinkCodes()" : {
+      "type" : [ "array", "null" ],
+      "items" : {
+        "type" : "string"
+      }
+    },
+    "toRawBorders()" : {
+      "type" : [ "array", "null" ],
+      "items" : {
+        "$ref" : "#/definitions/RawBorder"
+      }
+    },
+    "toRawDoors()" : {
+      "type" : [ "array", "null" ],
+      "items" : {
+        "$ref" : "#/definitions/RawDoor"
+      }
+    }
+  },
+  "additionalProperties" : false
+}

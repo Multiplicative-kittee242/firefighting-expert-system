@@ -1,0 +1,20 @@
+fire: P
+fireLocations: [p]
+threatenedLocations: [c, m, o]
+evacuationLocations: [c]
+ventilationOffLocations: [c, m, o]
+sealingDoorsToClose: [CP, HM, LM, PT]
+sealingDoorsKeepOpen: [MO]
+explosionThreatLocations: []
+flammableLocations: [m]
+machineryDamageLocations: []
+fireLineLinks: [MP, OP]
+fireLineLocations: [m, o]
+graphFromLocations: []
+frontlineHydrantsBalance: {m=FrontlineHydrantsBalance[here=1, need=0], o=FrontlineHydrantsBalance[here=1, need=0]}
+hydrantStates: {hydr_d1=hydr_d1(2/2 free), hydr_d2=hydr_d2(2/2 free), hydr_f=hydr_f(1/1 free), hydr_j=hydr_j(3/3 free), hydr_m=hydr_m(0/2 free), hydr_p=hydr_p(2/2 free), hydr_q=hydr_q(1/1 free)}
+firefightingPlanSteps: {}
+extBToByLocation: {p=[]}
+extByLocation: {p=[]}
+extBFromByLocation: {}
+fireLineHydrantOutletsByLocation: {m=[hydr_m], o=[hydr_m]}

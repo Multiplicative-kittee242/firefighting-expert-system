@@ -2,7 +2,7 @@
 chcp 65001 >nul 2>&1
 
 set "SCRIPT_DIR=%~dp0"
-set "JRE_DIR=%SCRIPT_DIR%jre-8-32"
+set "JRE_DIR=%SCRIPT_DIR%jre-17-32"
 set "JAVA_EXE=%JRE_DIR%\bin\java.exe"
 set "GRADLEW=%SCRIPT_DIR%gradlew.bat"
 

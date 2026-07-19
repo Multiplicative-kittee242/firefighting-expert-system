@@ -1,15 +1,18 @@
+﻿# Gradle
+.gradle/
+build/
+
 # Java / compiled artifacts
 *.class
 *.jar
 *.war
 *.ear
-!lib/*.jar
-
-# Gradle
-.gradle/
-build/
+# Both negations MUST stay below the broad *.jar above: git applies the last matching pattern, so a
+# negation placed before the rule it overrides silently does nothing (which is exactly how the Gradle
+# wrapper jar went missing from the repo — breaking ./gradlew on every fresh clone, CI and worktrees
+# included, while still working locally where the file happens to exist on disk).
 !gradle/wrapper/gradle-wrapper.jar
-!gradle/wrapper/gradle-wrapper.properties
+!lib/*.jar
 
 # IDE (IntelliJ IDEA)
 .idea/
@@ -30,8 +33,12 @@ Thumbs.db
 *.tmp
 hs_err_pid*
 
-# Project-specific (legacy restoration)
-jre-8-32/
+# Portable 32-bit JRE (downloaded/extracted automatically by the build).
+jre-17-32/
 
-# Agents
+# git-bash crash dump artifact
+bash.exe.stackdump
+
+# agents
+mcps/
 .claude

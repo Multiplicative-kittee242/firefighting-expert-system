@@ -1,0 +1,99 @@
+{
+  "$schema" : "http://json-schema.org/draft-07/schema#",
+  "definitions" : {
+    "BorderCoordinateSpec" : {
+      "type" : "object",
+      "properties" : {
+        "link" : {
+          "type" : [ "string", "null" ]
+        },
+        "points" : {
+          "type" : [ "array", "null" ],
+          "items" : {
+            "$ref" : "#/definitions/Point"
+          }
+        },
+        "link()" : {
+          "type" : [ "string", "null" ]
+        },
+        "points()" : {
+          "type" : [ "array", "null" ],
+          "items" : {
+            "$ref" : "#/definitions/Point"
+          }
+        }
+      },
+      "additionalProperties" : false
+    },
+    "LocationCoordinateSpec" : {
+      "type" : "object",
+      "properties" : {
+        "code" : {
+          "type" : [ "string", "null" ]
+        },
+        "points" : {
+          "type" : [ "array", "null" ],
+          "items" : {
+            "$ref" : "#/definitions/Point"
+          }
+        },
+        "code()" : {
+          "type" : [ "string", "null" ]
+        },
+        "points()" : {
+          "type" : [ "array", "null" ],
+          "items" : {
+            "$ref" : "#/definitions/Point"
+          }
+        }
+      },
+      "additionalProperties" : false
+    },
+    "Point" : {
+      "type" : "object",
+      "properties" : {
+        "x" : {
+          "type" : "integer"
+        },
+        "y" : {
+          "type" : "integer"
+        },
+        "x()" : {
+          "type" : "integer"
+        },
+        "y()" : {
+          "type" : "integer"
+        }
+      },
+      "additionalProperties" : false
+    }
+  },
+  "type" : "object",
+  "properties" : {
+    "border-coordinates" : {
+      "type" : [ "array", "null" ],
+      "items" : {
+        "$ref" : "#/definitions/BorderCoordinateSpec"
+      }
+    },
+    "location-coordinates" : {
+      "type" : [ "array", "null" ],
+      "items" : {
+        "$ref" : "#/definitions/LocationCoordinateSpec"
+      }
+    },
+    "border-coordinates()" : {
+      "type" : [ "array", "null" ],
+      "items" : {
+        "$ref" : "#/definitions/BorderCoordinateSpec"
+      }
+    },
+    "location-coordinates()" : {
+      "type" : [ "array", "null" ],
+      "items" : {
+        "$ref" : "#/definitions/LocationCoordinateSpec"
+      }
+    }
+  },
+  "additionalProperties" : false
+}

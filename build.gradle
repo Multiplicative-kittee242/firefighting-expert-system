@@ -1,211 +1,529 @@
 plugins {
     id 'java'
+    id 'java-test-fixtures'
+    id 'jvm-test-suite'
+    id 'jacoco'
+    id 'org.sonarqube' version '7.3.1.8318'
 }
 
-// Compiler settings to build the original 2008-era Java 1.6 source code
-// on a modern JDK. We explicitly target Java 1.6 bytecode and source level.
+// No published consumers of this jar (a desktop app, not a library) — SemVer's compatibility
+// promise doesn't apply here, so a lightweight build-number scheme is enough for traceability.
+// CI passes -PbuildNumber, sourced from GitHub Actions' own auto-incrementing github.run_number
+// (see .github/workflows/ci.yml); local builds fall back to a fixed, obviously-non-CI marker.
+// org.sonarqube picks this up automatically as sonar.projectVersion — no extra property needed.
+version = project.hasProperty('buildNumber') ? "0.1.${buildNumber}" : '0.1-dev'
+
+repositories {
+    mavenCentral()
+}
+
+// Dependencies managed via Version Catalog (gradle/libs.versions.toml)
+dependencies {
+    implementation files('lib/CLIPSJNI.jar')
+
+    implementation libs.jsonschema.generator
+    implementation libs.jsonschema.module.jackson
+
+    // networknt 3.x (brings Jackson 3 transitively in "Spring style" — no explicit version or BOM managed by us).
+    implementation(libs.json.schema.validator) {
+        exclude group: 'org.graalvm.js'
+        exclude group: 'org.graalvm.truffle'
+        exclude group: 'org.graalvm.sdk'
+    }
+
+    testImplementation libs.junit.jupiter
+    testImplementation libs.hamcrest
+    testImplementation libs.archunit
+    testImplementation libs.mockito.core
+    testImplementation libs.mockito.junit.jupiter
+    testRuntimeOnly libs.junit.platform.launcher
+}
+
+// Dependency locking for reproducible builds.
+// Run `./gradlew dependencies --write-locks` to regenerate gradle.lockfile.
+// File dependencies (CLIPSJNI.jar) are excluded by design.
+dependencyLocking {
+    lockAllConfigurations()
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'app.Main', 'Implementation-Version': project.version
+    }
+}
+
+// ------------------------------------------------------------------
+// Shared test fixtures (fakes/builders reused by both `test` and `testIntegration`)
+// ------------------------------------------------------------------
+// The `java-test-fixtures` plugin (see `plugins` above) provides this source set by convention
+// (`src/testFixtures/java`), wires main's output into its classpath, and auto-wires `test`'s
+// classpath to see it — no manual sourceSets/dependencies plumbing needed for either side (verified
+// empirically: dropping the equivalent manual blocks changed nothing about what compiled or ran).
+// `testIntegration` (below, via the `jvm-test-suite` plugin) depends on both `project()` and
+// `testFixtures(project())` directly — that notation resolves main/testFixtures as their built JARs
+// rather than output directories, which used to break `ImageIcon` loading in headless tests
+// (`ResourceUtil.resolveResourcePath` couldn't turn a `jar:` URI into a `Path`). Fixed on the
+// `ResourceUtil` side instead (see its javadoc): JVM-native consumers like `ImageIcon` now go through
+// `resolveResourceUrl`, which reads correctly from a jar or a directory either way, so the
+// jar-resolving dependency notation is safe to use as intended. `testClips` deliberately still wires
+// `sourceSets.main.output` directly instead (see its own sourceSets block below) — CLIPSJNI's native
+// `Environment.load` is C code that cannot read `feis.clp` from inside a jar at all, no matter how
+// the Java-side resource lookup is written, so `main` must stay a directory on that one classpath.
+// `testClips` also doesn't depend on `testFixtures`: it exercises the real shipped topology/config,
+// not synthetic fixtures (see its own AGENTS.md).
+
+// Unit tests run on the JUnit 5 (Jupiter) platform.
+//
+// Parallel execution: enabled on test and testIntegration (NOT testClips — see its own task's
+// comment below) via JVM system properties (a valid JUnit Platform configuration-parameter source
+// alongside junit-platform.properties). Only mode.classes.default is set to concurrent —
+// method-level mode is left at JUnit 5's own default (same_thread), so methods within one class
+// never run concurrently with each other. That default is load-bearing, not just unconfigured:
+// it's what keeps gui.map.PhaseVisibilityTest's shared, @BeforeAll-built controller
+// (@TestInstance(PER_CLASS)) safe without needing its own @Execution annotation.
+test {
+    useJUnitPlatform()
+    systemProperty 'junit.jupiter.execution.parallel.enabled', 'true'
+    systemProperty 'junit.jupiter.execution.parallel.mode.classes.default', 'concurrent'
+}
+
+// ------------------------------------------------------------------
+// CLIPS integration tests (32-bit CLIPSJNI native engine)
+// ------------------------------------------------------------------
+// Plain sourceSets wiring, not the jvm-test-suite plugin used by testIntegration below — main must
+// stay a directory on this classpath, not a jar (see the shared-test-fixtures comment above).
+sourceSets {
+    testClips {
+        java {
+            srcDirs = ['src/testClips/java']
+        }
+        compileClasspath += sourceSets.main.output
+        runtimeClasspath += sourceSets.main.output
+    }
+}
+
+configurations {
+    testClipsImplementation.extendsFrom implementation
+    testClipsRuntimeOnly.extendsFrom runtimeOnly
+}
+
+dependencies {
+    testClipsImplementation libs.junit.jupiter
+    testClipsImplementation libs.hamcrest
+    testClipsRuntimeOnly libs.junit.platform.launcher
+}
+
+// Runs the clips-integration test suite against the real CLIPSJNI native engine.
+// Must use the portable 32-bit JRE (see runApp above) — unlike JavaExec, a Test task's
+// `executable` does NOT conflict with the project's 64-bit toolchain (verified empirically;
+// no "Toolchain from executable... does not match..." error occurs here). NOT part of
+// `check`/`build` — run explicitly with `./gradlew testClips`.
+tasks.register('testClips', Test) {
+    group = 'verification'
+    description = 'Runs CLIPS integration tests against the real 32-bit CLIPSJNI engine'
+    dependsOn ensurePortableJre, verifyJre
+    workingDir = projectDir
+    testClassesDirs = sourceSets.testClips.output.classesDirs
+    classpath = sourceSets.testClips.runtimeClasspath
+    useJUnitPlatform()
+    // Deliberately NOT parallel, unlike test/testIntegration above — tried it (JUnit-level
+    // mode.classes.default=concurrent, still one JVM process), and it broke immediately: the three
+    // CLIPS-touching classes' @Execution(SAME_THREAD)/@ResourceLock guards serialize their actual
+    // CLIPS calls, but JUnit 5's parallel executor itself runs on a multi-threaded pool, and the
+    // extra concurrent JVM activity (thread pool + finalizer/GC interleaving) was enough on its own
+    // to reproduce the native EXCEPTION_ACCESS_VIOLATION / classloading corruption
+    // (BootstrapMethodError, ClassCastException) this whole reset()-and-reuse scheme exists to
+    // avoid — confirmed empirically, 2 of 3 runs failed outright. The annotations stay (documentary
+    // and correct for method-level safety within a class) but the class-level executor must not run
+    // concurrently with anything else in this same JVM process.
+    executable = file('jre-17-32/bin/java.exe')
+    jvmArgs '-Djava.library.path=lib'
+    notCompatibleWithConfigurationCache("Uses custom portable 32-bit JRE")
+    // JaCoCo agent stays enabled: testClips.exec feeds jacocoTestClipsReport, whose XML SonarCloud
+    // reads alongside jacocoTestReport's (see coverage section below). Still not part of check/build.
+    // Revert with `jacoco { enabled = false }` on this task if native crash rate ever rises.
+}
+
+// ------------------------------------------------------------------
+// Integration tests (normal 64-bit JVM — no CLIPSJNI native engine)
+// ------------------------------------------------------------------
+// Holds GUI-facing integration tests and any future clips-layer integration tests that do NOT
+// require the real 32-bit CLIPSJNI engine (those belong in src/testClips/java instead). Runs on
+// the project's normal 64-bit toolchain, like src/test — no portable-JRE dependency, so it joins
+// 'check' like an ordinary test task. Built with the jvm-test-suite plugin (see `plugins` above) —
+// `implementation project()`/`testFixtures(project())` below is the idiomatic way to depend on
+// this same build's main/testFixtures output; see the shared-test-fixtures comment further up for
+// why that's safe here (unlike for testClips).
+testing {
+    suites {
+        testIntegration(JvmTestSuite) {
+            useJUnitJupiter(libs.versions.junit)
+            sources {
+                java {
+                    srcDirs = ['src/testIntegration/java']
+                }
+            }
+            dependencies {
+                implementation project()
+                implementation testFixtures(project())
+                implementation libs.hamcrest
+                implementation libs.mockito.core
+                implementation libs.mockito.junit.jupiter
+            }
+            targets {
+                all {
+                    testTask.configure {
+                        group = 'verification'
+                        description = 'Runs integration tests that do not require the 32-bit CLIPSJNI engine (GUI-facing, etc.)'
+                        systemProperty 'junit.jupiter.execution.parallel.enabled', 'true'
+                        systemProperty 'junit.jupiter.execution.parallel.mode.classes.default', 'concurrent'
+                        // GUI-facing tests construct real Swing components (button groups) but never realize a
+                        // window. Forced here, at the JVM-fork level, so it is guaranteed to be set before AWT's
+                        // Toolkit initializes, regardless of which test class JUnit happens to load first.
+                        systemProperty 'java.awt.headless', 'true'
+                    }
+                }
+            }
+        }
+    }
+}
+
+tasks.named('check') {
+    dependsOn 'testIntegration'
+}
+
+// ------------------------------------------------------------------
+// Code coverage (JaCoCo)
+// ------------------------------------------------------------------
+// Pinned explicitly rather than trusting Gradle's own bundled default, which drifts across Gradle
+// upgrades and would silently change report format/behavior along with it.
+jacoco {
+    toolVersion = '0.8.15'
+}
+
+// The jacoco plugin applies a JacocoTaskExtension to every Test task by convention (test,
+// testIntegration, testClips each get their own build/jacoco/<taskName>.exec).
+//
+// Two SEPARATE reports on purpose — never a cross-machine .exec merge:
+//   * jacocoTestReport — what `check`/`build` produce: test + testIntegration. Safe on any 64-bit
+//     JVM, no portable 32-bit JRE, no native flakiness.
+//   * jacocoTestClipsReport (below) — testClips only, generated on whatever machine ran testClips.
+//
+// SonarCloud reads BOTH XMLs (comma-separated sonar.coverage.jacoco.xmlReportPaths in
+// gradle.properties) and unions them at the line level. Each XML is produced against the classes
+// compiled on the same machine as its own .exec, so JaCoCo's class-id match always holds. This is
+// deliberately NOT an .exec merge: merging testClips.exec (built on the windows CI runner) into a
+// report whose classes were compiled on the ubuntu runner silently drops a class to 0% coverage on
+// any bytecode mismatch — verified — so we keep the two coverage sources decoupled instead.
+tasks.named('jacocoTestReport', JacocoReport) {
+    dependsOn tasks.named('test'), tasks.named('testIntegration')
+    executionData(tasks.named('test').get(), tasks.named('testIntegration').get())
+    reports {
+        xml.required = true
+        html.required = true
+    }
+}
+
+tasks.named('check') {
+    dependsOn 'jacocoTestReport'
+}
+
+// testClips-only coverage (real CLIPS engine). Runs testClips, then reports against the classes
+// compiled on THIS machine — so its .exec always matches, whether run locally or on the windows CI
+// runner. Not part of check (needs the 32-bit JRE + carries the documented native flakiness). Its
+// XML is the second input SonarCloud unions with jacocoTestReport's; the two are never merged as raw
+// .exec across machines (see the jacocoTestReport comment above for why that would be unsafe).
+tasks.register('jacocoTestClipsReport', JacocoReport) {
+    group = 'verification'
+    description = 'Coverage from testClips only, for SonarCloud (unioned with jacocoTestReport at the XML level; not part of check)'
+    dependsOn tasks.named('testClips')
+    executionData(tasks.named('testClips').get())
+    sourceSets sourceSets.main
+    reports {
+        xml.required = true
+        html.required = true
+    }
+}
+
+// ------------------------------------------------------------------
+// SonarCloud analysis (SonarScanner for Gradle)
+// ------------------------------------------------------------------
+// Coverage comes from systemProp.sonar.coverage.jacoco.xmlReportPaths in gradle.properties — a
+// comma-separated pair: jacocoTestReport's XML (test + testIntegration) and jacocoTestClipsReport's
+// XML (testClips). Sonar unions them per line; a path that doesn't exist is a warning, not an error,
+// so a run without the testClips XML still analyzes with unit+integration coverage.
+// Locally, for the full picture: `./gradlew jacocoTestClipsReport sonar` (jacocoTestReport comes in
+// via the sonar dependency below; jacocoTestClipsReport runs testClips, so it needs the 32-bit JRE).
+// CI: the windows job uploads jacocoTestClipsReport's XML, the sonar job drops it into place and runs
+// `./gradlew sonar` (which regenerates jacocoTestReport itself on ubuntu — no testClips there).
+// Needs a SonarCloud token as SONAR_TOKEN (or -Dsonar.token=..., or systemProp.sonar.token in
+// ~/.gradle/gradle.properties) — deliberately not configured here; never commit a token.
+//
+// All other sonar.* values (projectKey/organization/host.url, and the sonar.issue.ignore.multicriteria
+// rule exclusions with their reasoning) live in this project's own gradle.properties as
+// systemProp.sonar.* entries, not here. Verified empirically that Gradle's systemProp.* mechanism
+// really does surface as a plain JVM system property, and confirmed via SonarSource's own docs that
+// the scanner reads system properties the same way it reads this DSL (a system property wins if both
+// set the same key) — these are static values with no Groovy logic behind them, so gradle.properties
+// is the more natural home, consistent with how this file already keeps org.gradle.* settings there
+// instead of in build.gradle.
+
+// Always give Sonar the check-level coverage (unit + integration) without a separate manual step —
+// its XML is one of the two xmlReportPaths. testClips coverage (the other path) is additive: present
+// when jacocoTestClipsReport's XML has been produced/placed, absent (a harmless warning) otherwise.
+tasks.named('sonar').configure {
+    dependsOn 'jacocoTestReport'
+}
+
+// ------------------------------------------------------------------
+// Java Toolchain & Compilation Settings
+// ------------------------------------------------------------------
+
+// Java toolchain configuration.
+// We compile and run against Java 17.
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+// Force UTF-8 encoding during compilation.
+// This is required because the project contains Cyrillic characters
+// in source code comments and resource files.
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
-    options.compilerArgs.addAll(['-source', '8', '-target', '8'])
 }
 
-// =====================================================
-// Portable 32-bit Java 8 JRE (for legacy CLIPSJNI.dll compatibility)
-//
-// This setup allows the project to run on any modern 64-bit Windows machine
-// with a single command, without requiring any pre-installed Java.
-//
-// On first run, Gradle will automatically download a portable 32-bit JRE 8
-// from Adoptium (Temurin) into the "jre-8-32" folder (~80 MB download, one-time only).
-// Subsequent runs use the local copy and do not require internet.
-// =====================================================
+// ------------------------------------------------------------------
+// JSON Schema generation for YAML configs
+// ------------------------------------------------------------------
 
-def portableJreVersion = '8u402-b06'   // older Adoptium build that still publishes the 32-bit JRE asset
-def jreFileVersion = '8u402b06'
-def portableJreUrl = "https://github.com/adoptium/temurin8-binaries/releases/download/jdk${portableJreVersion}/OpenJDK8U-jre_x86-32_windows_hotspot_${jreFileVersion}.zip"
-def jreZip = file("$buildDir/downloads/jre-8-32.zip")
-def jreDir = file('jre-8-32')
+// Regenerates the JSON schemas.
+// The generator resolves the output directory relative to the working directory, so workingDir must be projectDir.
+tasks.register('generateConfigSchemas', JavaExec) {
+    group = 'documentation'
+    description = 'Regenerates JSON schemas for YAML configs'
+    dependsOn classes
+    workingDir = projectDir
+    mainClass = 'config.ConfigSchemaGenerator'
+    classpath = sourceSets.main.runtimeClasspath
+}
 
+// Verifies that committed schemas have not drifted from current DTO definitions.
+// Wired into the 'check' lifecycle task so 'build' fails on drift.
+tasks.register('verifyConfigSchemas', JavaExec) {
+    group = 'verification'
+    description = 'Fails the build if committed JSON schemas do not match what ConfigSchemaFactory produces'
+    dependsOn classes
+    workingDir = projectDir
+    mainClass = 'config.ConfigSchemaVerifier'
+    classpath = sourceSets.main.runtimeClasspath
+}
+
+tasks.named('check') {
+    dependsOn 'verifyConfigSchemas'
+}
+
+// ------------------------------------------------------------------
+// Portable 32-bit JRE (for legacy CLIPSJNI.dll compatibility)
+// ------------------------------------------------------------------
+
+def portableJreVersion = '17.0.10+7'
+def jreFileVersion = '17.0.10_7'
+def portableJreUrl = "https://github.com/adoptium/temurin17-binaries/releases/download/jdk-${portableJreVersion}/OpenJDK17U-jre_x86-32_windows_hotspot_${jreFileVersion}.zip"
+
+def jreZip = layout.buildDirectory.file("downloads/jre-17-32.zip").get().asFile
+def jreDir = file('jre-17-32')
+
+// Downloads portable 32-bit JRE
 tasks.register('downloadPortableJre') {
     group = 'runtime'
-    description = 'Downloads a portable 32-bit Java 8 JRE (required to load the legacy 32-bit CLIPSJNI.dll)'
+    description = 'Downloads the portable 32-bit JRE'
+
+    inputs.property('jreUrl', portableJreUrl)
+    outputs.file(jreZip)
 
     doLast {
         jreZip.parentFile.mkdirs()
 
         if (!jreZip.exists()) {
-            println "First-time setup: Downloading portable 32-bit Java 8 JRE (~80 MB). This happens only once."
-            println "Source: $portableJreUrl"
-
+            println "Downloading portable 32-bit JRE (~40 MB)..."
             new URL(portableJreUrl).withInputStream { input ->
                 jreZip.withOutputStream { output -> output << input }
             }
-
-            def sizeMB = (jreZip.length() / 1024 / 1024).round(1)
-            println "Download completed: ${sizeMB} MB"
+            println "Download completed: ${(jreZip.length() / 1024 / 1024).round(1)} MB"
         }
     }
 }
 
-tasks.register('extractPortableJre') {
+// Extracts the JRE (removes top-level folder from archive)
+tasks.register('extractPortableJre', Copy) {
     group = 'runtime'
-    description = 'Extracts the portable 32-bit JRE into the jre-8-32/ directory'
+    description = 'Extracts the portable 32-bit JRE'
+
     dependsOn downloadPortableJre
 
-    doLast {
-        def javaExe = file("$jreDir/bin/java.exe")
-
-        if (!javaExe.exists()) {
-            println "Extracting portable 32-bit JRE..."
-
-            if (jreDir.exists()) {
-                jreDir.deleteDir()
-            }
-
-            ant.unzip(src: jreZip, dest: buildDir, overwrite: true)
-
-            def extractedRoot = fileTree(dir: buildDir, include: '**/bin/java.exe').files[0].parentFile.parentFile
-            extractedRoot.renameTo(jreDir)
-
-            println "Portable 32-bit JRE ready."
+    doFirst {
+        if (jreDir.exists()) {
+            delete(jreDir)
         }
     }
+
+    from(zipTree(jreZip)) {
+        eachFile { fileCopyDetails ->
+            if (fileCopyDetails.relativePath.segments.length > 1) {
+                fileCopyDetails.relativePath = new RelativePath(
+                        fileCopyDetails.relativePath.isFile(),
+                        fileCopyDetails.relativePath.segments.drop(1)
+                )
+            }
+        }
+        includeEmptyDirs = false
+    }
+
+    into jreDir
 }
 
 tasks.named('extractPortableJre').configure {
     notCompatibleWithConfigurationCache(
-            "Uses ant.unzip and dynamic file resolution which are not compatible with configuration cache"
+            "Uses zipTree which is incompatible with configuration cache"
     )
 }
 
+// Ensures the portable JRE is ready
 tasks.register('ensurePortableJre') {
     group = 'runtime'
-    description = 'Ensures a local 32-bit Java 8 JRE is available (auto-downloads on first run)'
+    description = 'Ensures the portable 32-bit JRE is ready to use'
     dependsOn extractPortableJre
-    // No output here — keep it invisible unless download/extract actually happens above.
 }
 
-tasks.withType(JavaCompile).configureEach {
-    options.encoding = 'UTF-8'
-    // When using a real JDK 8 via toolchain, these flags are accepted
-    options.compilerArgs.addAll(['-source', '8', '-target', '8'])
-}
+// Verifies that the portable JRE is 32-bit
+tasks.register('verifyJre') {
+    dependsOn ensurePortableJre
 
-repositories {
-    flatDir {
-        dirs 'lib'
-    }
-}
+    def execOps = services.get(ExecOperations)
 
-dependencies {
-    implementation files('lib/CLIPSJNI.jar')
-}
+    doLast {
+        def javaExe = file('jre-17-32/bin/java.exe')
 
-jar {
-    manifest {
-        attributes 'Main-Class': 'Main'
-    }
-}
+        if (!javaExe.exists()) {
+            throw new GradleException("Portable JRE not found at: ${javaExe.absolutePath}")
+        }
 
-// Run task that reproduces the original 2008 launch environment.
-// It uses the embedded portable 32-bit JRE so that the legacy 32-bit
-// CLIPSJNI.dll can be loaded successfully.
-//
-// On the very first execution, Gradle will download and prepare the JRE
-// automatically. After that, the application starts immediately.
-// We use a plain Exec task (instead of JavaExec) for runApp.
-// This completely bypasses Gradle's Java toolchain / javaLauncher machinery,
-// which was conflicting with our custom portable 32-bit JRE executable
-// ("Toolchain from `executable` property does not match toolchain from `javaLauncher` property").
-//
-// The portable JRE is a 32-bit JVM required by the ancient CLIPSJNI.dll.
-// We cannot rely on the project's default toolchain (which is 64-bit).
-tasks.register('runApp', Exec) {
-    dependsOn classes, ensurePortableJre, prepareRuntime
-    mustRunAfter prepareRuntime
+        println "=== Portable JRE Verification ==="
+        println "Location   : ${jreDir.absolutePath}"
+        println "Executable : ${javaExe.absolutePath}"
 
-    workingDir = projectDir
+        def output = new ByteArrayOutputStream()
 
-    // The task depends on a dynamically created executable (the portable JRE),
-    // so we mark it incompatible with configuration cache.
-    notCompatibleWithConfigurationCache("Portable JRE path is resolved at execution time after download")
+        execOps.exec {
+            executable = javaExe
+            args = ['-XshowSettings:properties', '-version']
+            standardOutput = output
+            errorOutput = output
+            ignoreExitValue = true
+        }
 
-    doFirst {
-        def jreJava = file('jre-8-32/bin/java.exe')
-        if (!jreJava.exists()) {
+        def outputText = output.toString()
+        def archMatch = (outputText =~ /sun\.arch\.data\.model\s*=\s*(\d+)/)
+        def arch = archMatch ? archMatch[0][1] : null
+
+        println "------------------------------------------"
+        println "Detected architecture : ${arch ?: 'unknown'} bit"
+
+        if (arch != '32') {
             throw new GradleException(
-                "Portable 32-bit JRE not found at ${jreJava.absolutePath}.\n" +
-                "This should have been downloaded by the 'ensurePortableJre' task."
+                    "Expected 32-bit JRE, but got ${arch}-bit instead!"
             )
         }
 
-        // Build the command line manually for the custom JRE.
-        // Equivalent to: java -Djava.library.path=... -cp ... Main
-        def cp = sourceSets.main.runtimeClasspath.asPath
+        println "Verification successful: 32-bit JRE is ready."
+    }
+}
 
-        // Receive the explicit language argument.
-        def languageArg = ''
+// Runs the application with the portable 32-bit JRE.
+//
+// The 32-bit JRE is mandatory: CLIPSJNI.dll is a 32-bit native library and is
+// incompatible with the 64-bit Java toolchain. We deliberately use a plain Exec
+// task that invokes the JRE's java.exe directly (no cmd/chcp wrapper) instead of
+// JavaExec: because the project configures a Java toolchain, a JavaExec task's
+// `javaLauncher` is auto-populated from that (64-bit) toolchain and then clashes
+// with a custom 32-bit `executable` ("Toolchain from `executable` property does
+// not match toolchain from `javaLauncher` property"). Exec has no such machinery.
+tasks.register('runApp', Exec) {
+    group = 'application'
+    description = 'Runs app.Main using the portable 32-bit JRE'
+
+    dependsOn classes, ensurePortableJre, verifyJre
+
+    workingDir = projectDir
+    notCompatibleWithConfigurationCache("Uses custom portable 32-bit JRE")
+
+    // Build the command in the execution phase: the portable JRE may not exist
+    // yet on a clean checkout (it is provisioned by ensurePortableJre/verifyJre,
+    // which run before this doFirst).
+    doFirst {
+        def jreJava = file('jre-17-32/bin/java.exe')
+        if (!jreJava.exists()) {
+            throw new GradleException("Portable 32-bit JRE not found at ${jreJava.absolutePath}")
+        }
+
+        def command = [
+                jreJava.absolutePath,
+                '-Djava.library.path=lib',
+                '-Dfile.encoding=UTF-8',
+                '-Dconsole.encoding=UTF-8',
+                '-cp', sourceSets.main.runtimeClasspath.asPath,
+                'app.Main'
+        ]
         if (project.hasProperty('appArgs')) {
-            languageArg = project.property('appArgs')
+            command += project.property('appArgs').toString().split(/\s+/).findAll { it }
         }
 
-        commandLine 'cmd', '/c',
-                    'chcp 65001 >nul 2>&1 && ' +
-                    jreJava.absolutePath +
-                    ' -Djava.library.path=lib' +
-                    ' -Dfile.encoding=UTF-8' +
-                    ' -Dconsole.encoding=UTF-8' +
-                    ' -cp ' + cp +
-                    ' Main ' + languageArg
-
-        println "Using embedded 32-bit JRE: ${jreJava}"
-        if (languageArg) {
-            println "Language argument passed: ${languageArg}"
-        }
+        commandLine command
+        println "Using portable 32-bit JRE: ${jreJava}"
     }
 }
 
-// Convenience task to copy the native library and resources to the project root.
-// This replicates the original 2008 layout where CLIPSJNI.dll and CLIPS rules were expected to be next to the application.
-tasks.register('prepareRuntime', Copy) {
-    from('src/main/resources') {
-        include 'clips/**'
-    }
-    from 'lib/CLIPSJNI.dll'
-    into projectDir
+// Runs one of the standalone clips.diagnostics classes with the portable 32-bit JRE (same
+// constraint as runApp: these classes load the real CLIPSJNI.dll). Usage:
+//   ./gradlew runClipsDiagnostic -PdiagClass=ScenarioGoldenMasterCheck
+//   ./gradlew runClipsDiagnostic -PdiagClass=ScenarioGoldenMasterCheck -PdiagArgs=record
+tasks.register('runClipsDiagnostic', Exec) {
+    group = 'verification'
+    description = 'Runs a clips.diagnostics standalone check (usage: -PdiagClass=<ClassName> [-PdiagArgs="..."])'
 
-    doNotTrackState("Copying files into project root conflicts with configuration cache and incremental build state tracking")
-}
+    dependsOn testClipsClasses, ensurePortableJre, verifyJre
 
-tasks.named('compileJava').configure {
-    mustRunAfter prepareRuntime
-}
+    workingDir = projectDir
+    notCompatibleWithConfigurationCache("Uses custom portable 32-bit JRE")
 
-tasks.named('processResources').configure {
-    mustRunAfter prepareRuntime
-}
-
-// Verification task for the embedded portable JRE.
-// Usage: gradlew verifyJre
-tasks.register('verifyJre') {
-    dependsOn ensurePortableJre
-    doLast {
-        def javaExe = file('jre-8-32/bin/java.exe')
-
-        if (javaExe.exists()) {
-            println "=== Portable 32-bit JRE verification ==="
-            println "Location   : ${jreDir.absolutePath}"
-            println "Executable : ${javaExe}"
-            println "------------------------------------------"
-
-            // Execute java -version using the portable JRE
-            exec {
-                executable = javaExe
-                args = ['-version']
-            }
-        } else {
-            println "ERROR: Portable JRE not found at expected location: ${jreDir.absolutePath}"
+    doFirst {
+        if (!project.hasProperty('diagClass')) {
+            throw new GradleException(
+                "Specify -PdiagClass=<ClassName>, e.g. ScenarioGoldenMasterCheck (see src/testClips/java/clips/diagnostics)"
+            )
         }
+
+        def jreJava = file('jre-17-32/bin/java.exe')
+        if (!jreJava.exists()) {
+            throw new GradleException("Portable 32-bit JRE not found at ${jreJava.absolutePath}")
+        }
+
+        def className = 'clips.diagnostics.' + project.property('diagClass')
+        def command = [
+                jreJava.absolutePath,
+                '-Djava.library.path=lib',
+                '-Dfile.encoding=UTF-8',
+                '-Dconsole.encoding=UTF-8',
+                '-cp', sourceSets.testClips.runtimeClasspath.asPath,
+                className
+        ]
+        if (project.hasProperty('diagArgs')) {
+            command += project.property('diagArgs').toString().split(/\s+/).findAll { it }
+        }
+
+        commandLine command
+        println "Running diagnostic: ${className}"
     }
 }
-

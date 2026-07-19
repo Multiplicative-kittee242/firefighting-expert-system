@@ -1,0 +1,167 @@
+$schema: ./schemas/topology-schema.json
+
+# Scenario attributes per compartment (feis.clp's former location-attrs): tank (numeric id — assigned
+# explicitly on every location, unlike the fields below, since it is redundant identity tied to the
+# special role of the R/T fire-doors, not a sparse/optional attribute), area (m^2), type
+# (post/service/auxilary/engine-room, omitted = uninhabited passage/tank), ventilation (system type
+# transit/smoke_control/basic — see domain.types.VentilationType, omitted = no ventilation), explosive/
+# burning material (at most one each), machinery, chemical-suppression system.
+# Geometry for these locations is now explicitly keyed by code in geometry.yaml (see
+# LocationCoordinateSpec), no longer relying on positional order.
+location-labels: [
+  { code: "A", tank: 3, area: 54, type: "post", ventilation: "basic", explosive: "chemical_reagent" },
+  { code: "B", tank: 3, area: 40, type: "post", ventilation: "basic" },
+  { code: "C", tank: 3, area: 21, type: "post", ventilation: "basic" },
+  { code: "D", tank: 3, area: 33, type: "service" },
+  { code: "E", tank: 3, area: 31, type: "auxiliary", ventilation: "smoke_control", explosive: "diesel_oil", burning: "machine_oil", machinery: true, chemical-suppression: true },
+  { code: "F", tank: 3, area: 38, type: "service", ventilation: "transit" },
+  { code: "G", tank: 3, area: 3 },
+  { code: "H", tank: 3, area: 4 },
+  { code: "I", tank: 3, area: 2 },
+  { code: "J", tank: 3, area: 74, type: "engine_room", ventilation: "smoke_control", explosive: "compressed_air", burning: "machine_oil", machinery: true, chemical-suppression: true },
+  { code: "K", tank: 3, area: 4 },
+  { code: "L", tank: 3, area: 4, type: "service", burning: "working_clothes" },
+  { code: "M", tank: 3, area: 11, type: "service", ventilation: "transit", burning: "working_clothes" },
+  { code: "N", tank: 3, area: 4 },
+  { code: "O", tank: 3, area: 6, ventilation: "transit" },
+  { code: "P", tank: 3, area: 6 },
+  { code: "Q", tank: 3, area: 4 },
+  { code: "R", tank: 4 },
+  { code: "T", tank: 2 }
+]
+
+# Bulkheads between compartments. Fire spreads across these (both directions); `length` is the
+# shared-wall length in metres, feeding the fire-line perimeter / hydrant-distance calculations.
+# Geometry for these borders is now explicitly keyed by link in geometry.yaml (see
+# BorderCoordinateSpec), no longer relying on positional order.
+borders: [
+  { link: "AB", length: 4.0 },  { link: "AE", length: 7.6 },  { link: "AF", length: 1.2 },
+  { link: "AQ", length: 3.6 },  { link: "BC", length: 4.0 },  { link: "BF", length: 7.2 },
+  { link: "BL", length: 2.8 },  { link: "CM", length: 2.8 },  { link: "CP", length: 2.4 },
+  { link: "DE", length: 10.9 }, { link: "DF", length: 7.2 },  { link: "DH", length: 1.2 },
+  { link: "DJ", length: 24.0 }, { link: "DI", length: 1.6 },  { link: "DN", length: 2.8 },
+  { link: "DO", length: 2.4 },  { link: "DQ", length: 1.2 },  { link: "EF", length: 4.0 },
+  { link: "EQ", length: 0.7 },  { link: "FG", length: 1.6 },  { link: "FI", length: 1.2 },
+  { link: "FK", length: 1.2 },  { link: "FL", length: 1.2 },  { link: "GH", length: 1.6 },
+  { link: "GI", length: 1.6 },  { link: "GK", length: 1.6 },  { link: "HI", length: 1.2 },
+  { link: "HK", length: 1.2 },  { link: "HM", length: 1.6 },  { link: "HN", length: 1.2 },
+  { link: "KL", length: 2.8 },  { link: "KM", length: 1.2 },  { link: "LM", length: 1.2 },
+  { link: "MN", length: 2.8 },  { link: "MO", length: 1.4 },  { link: "MP", length: 2.6 },
+  { link: "NO", length: 1.2 },  { link: "OP", length: 2.4 }
+]
+
+# Passable openings. `to: out` = an exit that leaves the modeled compartment for another deck
+# (an escape ladder/trunk); `fireRated: true` marks a fire-rated door (rendered differently).
+# Doors to R/T lead to adjacent tank compartments (no bulkhead, so no fire spread across them).
+doors: [
+  { from: "A", to: "Q" },
+  { from: "A", to: "B", fireRated: true },
+  { from: "C", to: "P" },
+  { from: "D", to: "E" },
+  { from: "D", to: "F" },
+  { from: "D", to: "H", fireRated: true },
+  { from: "D", to: "J" },
+  { from: "D", to: "Q" },
+  { from: "D", to: "R", fireRated: true },
+  { from: "D", to: "T", fireRated: true },
+  { from: "E", to: "F" },
+  { from: "G", to: "H" },
+  { from: "H", to: "I" },
+  { from: "H", to: "K" },
+  { from: "H", to: "M" },
+  { from: "H", to: "N" },
+  { from: "J", to: "out", fireRated: true },
+  { from: "K", to: "out", fireRated: true },
+  { from: "L", to: "M" },
+  { from: "M", to: "O" },
+  { from: "N", to: "out", fireRated: true },
+  { from: "P", to: "T", fireRated: true }
+]
+
+# Directed evacuation graph: `from` escapes toward `to`. Direction is significant (it is the
+# escape direction, NOT alphabetical) — a passage open both ways is declared as two routes
+# (e.g. E→F and F→E). The rules walk this graph against the flow from the fire to find every
+# room whose escape path is cut. Not derivable from doors: direction matters, some doors have
+# no route (P→T) while D→R / D→T reach tank compartments that have no bulkhead.
+evacuation-routes: [
+  { from: "E", to: "F" }, { from: "F", to: "E" }, { from: "F", to: "D" }, { from: "E", to: "D" },
+  { from: "J", to: "D" }, { from: "B", to: "A" }, { from: "A", to: "Q" }, { from: "Q", to: "D" },
+  { from: "L", to: "M" }, { from: "O", to: "M" }, { from: "M", to: "H" }, { from: "I", to: "H" },
+  { from: "G", to: "H" }, { from: "H", to: "K" }, { from: "H", to: "N" }, { from: "H", to: "D" },
+  { from: "D", to: "H" }, { from: "C", to: "P" }, { from: "D", to: "J" }, { from: "D", to: "R" },
+  { from: "D", to: "T" }, { from: "K", to: "H" }, { from: "N", to: "H" }
+]
+
+# Fire-hose reach: how far (metres) a hose must run to get from `from` to the door `to`, used to
+# judge whether a hydrant's hose can reach a given fire-line door. Two graphs sharing this shape:
+# door-to-door (both endpoints are door codes, the run between two adjacent door centres) and
+# hydrant-to-door (`from` is a hydrant title, the run from its outlet to the nearest door). Door
+# endpoints are resolved order-insensitively (alphabetized before lookup), so authoring order does
+# not matter.
+fire-hose-spans:
+  door-to-door: [
+    { from: "AB", to: "AQ", distance: 8.0 },  { from: "AQ", to: "DQ", distance: 1.6 },
+    { from: "DE", to: "DQ", distance: 8.4 },  { from: "DE", to: "DF", distance: 7.2 },
+    { from: "DE", to: "DH", distance: 12.0 }, { from: "DE", to: "DJ", distance: 15.3 },
+    { from: "DE", to: "EF", distance: 3.3 },  { from: "DE", to: "DT", distance: 17.8 },
+    { from: "DF", to: "DQ", distance: 15.6 }, { from: "DF", to: "DH", distance: 4.8 },
+    { from: "DF", to: "DJ", distance: 8.2 },  { from: "DF", to: "EF", distance: 5.0 },
+    { from: "DF", to: "DT", distance: 10.6 }, { from: "DH", to: "DQ", distance: 20.4 },
+    { from: "DH", to: "DJ", distance: 3.5 },  { from: "DJ", to: "DQ", distance: 23.7 },
+    { from: "DJ", to: "DT", distance: 2.6 },  { from: "DH", to: "GH", distance: 2.0 },
+    { from: "DH", to: "HI", distance: 0.8 },  { from: "DH", to: "HK", distance: 2.8 },
+    { from: "DH", to: "HM", distance: 2.0 },  { from: "DH", to: "HN", distance: 0.8 },
+    { from: "DH", to: "DT", distance: 5.8 },  { from: "DQ", to: "DT", distance: 26.2 },
+    { from: "DT", to: "PT", distance: 3.8 },  { from: "HM", to: "LM", distance: 2.7 },
+    { from: "HM", to: "MO", distance: 2.8 }
+  ]
+  hydrant-to-door: [
+    { from: "hydr_d1", to: "DE", distance: 1.6 },  { from: "hydr_d1", to: "DF", distance: 8.5 },
+    { from: "hydr_d1", to: "DH", distance: 13.2 }, { from: "hydr_d1", to: "DJ", distance: 16.5 },
+    { from: "hydr_d1", to: "DQ", distance: 7.3 },  { from: "hydr_d2", to: "DE", distance: 14.3 },
+    { from: "hydr_d2", to: "DF", distance: 7.2 },  { from: "hydr_d2", to: "DH", distance: 2.5 },
+    { from: "hydr_d2", to: "DJ", distance: 1.0 },  { from: "hydr_d2", to: "DQ", distance: 22.7 },
+    { from: "hydr_f",  to: "DF", distance: 2.7 },  { from: "hydr_f",  to: "EF", distance: 7.0 },
+    { from: "hydr_j",  to: "DJ", distance: 3.8 },  { from: "hydr_m",  to: "HM", distance: 2.8 },
+    { from: "hydr_m",  to: "LM", distance: 3.1 },  { from: "hydr_m",  to: "MO", distance: 1.0 },
+    { from: "hydr_p",  to: "CP", distance: 0.8 },  { from: "hydr_q",  to: "DQ", distance: 2.9 },
+    { from: "hydr_q",  to: "AQ", distance: 1.5 }
+  ]
+
+# Fire sensor sub-codes and their physical sensor type — see domain.types.FireSensorType.
+fire-sensor-codes: [
+  { code: "A1", type: "combined" },     { code: "A2", type: "combined" },     { code: "B1", type: "combined" },
+  { code: "B2", type: "combined" },     { code: "C",  type: "combined" },     { code: "D1", type: "combined" },
+  { code: "D2", type: "combined" },     { code: "D3", type: "rate_of_rise" }, { code: "D4", type: "combined" },
+  { code: "D5", type: "combined" },     { code: "D6", type: "rate_of_rise" }, { code: "E",  type: "temperature" },
+  { code: "F1", type: "temperature" },  { code: "F2", type: "temperature" },  { code: "J1", type: "temperature" },
+  { code: "J2", type: "temperature" },  { code: "J3", type: "temperature" },  { code: "J4", type: "temperature" },
+  { code: "J5", type: "temperature" },  { code: "J6", type: "temperature" },  { code: "J7", type: "rate_of_rise" },
+  { code: "J8", type: "temperature" },  { code: "L",  type: "temperature" },  { code: "M",  type: "combined" }
+]
+
+hydrant-outlets: [
+  { title: "hydr_d1", outlets: 2 },
+  { title: "hydr_d2", outlets: 2 },
+  { title: "hydr_f",  outlets: 1 },
+  { title: "hydr_j",  outlets: 3 },
+  { title: "hydr_m",  outlets: 2 },
+  { title: "hydr_p",  outlets: 2 },
+  { title: "hydr_q",  outlets: 1 }
+]
+
+# Portable fire extinguishers, one entry per device. `type`: "carbon_dioxide" or "air_foam".
+extinguishers: [
+  { title: "est_a",  type: "carbon_dioxide" },
+  { title: "est_b1", type: "carbon_dioxide" },
+  { title: "est_b2", type: "carbon_dioxide" },
+  { title: "est_b3", type: "air_foam" },
+  { title: "est_c",  type: "carbon_dioxide" },
+  { title: "est_e1", type: "carbon_dioxide" },
+  { title: "est_e2", type: "air_foam" },
+  { title: "est_h",  type: "carbon_dioxide" },
+  { title: "est_j1", type: "carbon_dioxide" },
+  { title: "est_j2", type: "carbon_dioxide" },
+  { title: "est_j3", type: "air_foam" },
+  { title: "est_m",  type: "carbon_dioxide" }
+]

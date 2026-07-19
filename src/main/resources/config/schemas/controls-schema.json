@@ -1,0 +1,145 @@
+{
+  "$schema" : "http://json-schema.org/draft-07/schema#",
+  "definitions" : {
+    "ElementPlacement(String)" : {
+      "type" : "object",
+      "properties" : {
+        "code" : {
+          "type" : [ "string", "null" ]
+        },
+        "position" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/Point"
+          } ]
+        },
+        "code()" : {
+          "type" : [ "string", "null" ]
+        },
+        "position()" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/Point"
+          } ]
+        }
+      },
+      "additionalProperties" : false
+    },
+    "HydrantPlacement" : {
+      "type" : "object",
+      "properties" : {
+        "code" : {
+          "type" : [ "string", "null" ]
+        },
+        "count" : {
+          "type" : "integer"
+        },
+        "position" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/Point"
+          } ]
+        },
+        "code()" : {
+          "type" : [ "string", "null" ]
+        },
+        "count()" : {
+          "type" : "integer"
+        },
+        "position()" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/Point"
+          } ]
+        }
+      },
+      "additionalProperties" : false
+    },
+    "Point" : {
+      "type" : "object",
+      "properties" : {
+        "x" : {
+          "type" : "integer"
+        },
+        "y" : {
+          "type" : "integer"
+        },
+        "x()" : {
+          "type" : "integer"
+        },
+        "y()" : {
+          "type" : "integer"
+        }
+      },
+      "additionalProperties" : false
+    }
+  },
+  "type" : "object",
+  "properties" : {
+    "door-buttons-placing" : {
+      "type" : [ "array", "null" ],
+      "items" : {
+        "$ref" : "#/definitions/ElementPlacement(String)"
+      }
+    },
+    "evacuation-buttons-placing" : {
+      "type" : [ "array", "null" ],
+      "items" : {
+        "$ref" : "#/definitions/ElementPlacement(String)"
+      }
+    },
+    "explosion-markers-placing" : {
+      "type" : [ "array", "null" ],
+      "items" : {
+        "$ref" : "#/definitions/ElementPlacement(String)"
+      }
+    },
+    "fire-buttons-placing" : {
+      "type" : [ "array", "null" ],
+      "items" : {
+        "$ref" : "#/definitions/ElementPlacement(String)"
+      }
+    },
+    "hydrant-placing" : {
+      "type" : [ "array", "null" ],
+      "items" : {
+        "$ref" : "#/definitions/HydrantPlacement"
+      }
+    },
+    "door-buttons-placing()" : {
+      "type" : [ "array", "null" ],
+      "items" : {
+        "$ref" : "#/definitions/ElementPlacement(String)"
+      }
+    },
+    "evacuation-buttons-placing()" : {
+      "type" : [ "array", "null" ],
+      "items" : {
+        "$ref" : "#/definitions/ElementPlacement(String)"
+      }
+    },
+    "explosion-markers-placing()" : {
+      "type" : [ "array", "null" ],
+      "items" : {
+        "$ref" : "#/definitions/ElementPlacement(String)"
+      }
+    },
+    "fire-buttons-placing()" : {
+      "type" : [ "array", "null" ],
+      "items" : {
+        "$ref" : "#/definitions/ElementPlacement(String)"
+      }
+    },
+    "hydrant-placing()" : {
+      "type" : [ "array", "null" ],
+      "items" : {
+        "$ref" : "#/definitions/HydrantPlacement"
+      }
+    }
+  },
+  "additionalProperties" : false
+}

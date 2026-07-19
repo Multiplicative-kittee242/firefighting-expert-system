@@ -1,0 +1,73 @@
+$schema: ./schemas/controls-schema.json
+
+explosion-markers-placing:
+  - {code: "J", position: {x: 596, y: 195}}
+  - {code: "E", position: {x: 295, y: 393}}
+  - {code: "A", position: {x: 268, y: 555}}
+
+fire-buttons-placing:
+  - {code: "G", position: {x: 750, y: 385}}
+  - {code: "H", position: {x: 831, y: 369}}
+  - {code: "I", position: {x: 750, y: 331}}
+  - {code: "K", position: {x: 831, y: 426}}
+  - {code: "N", position: {x: 927, y: 331}}
+  - {code: "O", position: {x: 1007, y: 378}}
+  - {code: "P", position: {x: 1007, y: 466}}
+  - {code: "Q", position: {x: 233, y: 507}}
+
+evacuation-buttons-placing:
+  - {code: "A", position: {x: 461, y: 440}}
+  - {code: "B", position: {x: 801, y: 482}}
+  - {code: "C", position: {x: 977, y: 482}}
+  - {code: "E", position: {x: 461, y: 305}}
+  - {code: "F", position: {x: 705, y: 305}}
+  - {code: "G", position: {x: 782, y: 347}}
+  - {code: "H", position: {x: 822, y: 305}}
+  - {code: "I", position: {x: 782, y: 305}}
+  - {code: "L", position: {x: 772, y: 442}}
+  - {code: "M", position: {x: 898, y: 347}}
+  - {code: "O", position: {x: 977, y: 305}}
+  - {code: "Q", position: {x: 224, y: 433}}
+
+# Button shape (size/orientation/align/valign) lives in groups.yaml's door-button-group, keyed
+# by the same code — see config.specification.basic.DoorGlyphSpec.
+door-buttons-placing: [
+  { code: "AQ", position: {x: 245, y: 452} },
+  { code: "EF", position: {x: 503, y: 355} },
+  { code: "LM", position: {x: 827, y: 444} },
+  { code: "GH", position: {x: 787, y: 354} },
+  { code: "DE", position: {x: 400, y: 301} },
+  { code: "DJ", position: {x: 919, y: 246} },
+  { code: "DR", position: {x: 183, y: 378} },
+  { code: "DQ", position: {x: 211, y: 414} },
+  { code: "DF", position: {x: 645, y: 301} },
+  { code: "CP", position: {x: 944, y: 478} },
+  { code: "MO", position: {x: 939, y: 351} },
+  { code: "HK", position: {x: 809, y: 381} },
+  { code: "HI", position: {x: 787, y: 309} },
+  { code: "HN", position: {x: 843, y: 309} },
+  { code: "HM", position: {x: 843, y: 354} },
+  { code: "AB", position: {x: 482, y: 530} },
+  { code: "DT", position: {x: 998, y: 265} },
+  { code: "PT", position: {x: 998, y: 394} },
+  { code: "DH", position: {x: 807, y: 301} }
+]
+
+hydrant-placing:
+  - {code: "A", position: {x: 434, y: 457}, count: 1}
+  - {code: "B", position: {x: 774, y: 499}, count: 1}
+  - {code: "C", position: {x: 950, y: 499}, count: 1}
+  - {code: "D", position: {x: 515, y: 283}, count: 1}
+  - {code: "E", position: {x: 434, y: 322}, count: 1}
+  - {code: "F", position: {x: 678, y: 418}, count: 1}
+  - {code: "G", position: {x: 751, y: 364}, count: 2}
+  - {code: "H", position: {x: 807, y: 322}, count: 2}
+  - {code: "I", position: {x: 751, y: 322}, count: 2}
+  - {code: "J", position: {x: 950, y: 34},  count: 1}
+  - {code: "K", position: {x: 751, y: 418}, count: 1}
+  - {code: "L", position: {x: 751, y: 459}, count: 1}
+  - {code: "M", position: {x: 870, y: 364}, count: 1}
+  - {code: "N", position: {x: 870, y: 322}, count: 1}
+  - {code: "O", position: {x: 950, y: 322}, count: 1}
+  - {code: "P", position: {x: 943, y: 411}, count: 1}
+  - {code: "Q", position: {x: 209, y: 435}, count: 2}

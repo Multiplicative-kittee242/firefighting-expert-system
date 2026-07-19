@@ -1,10 +1,21 @@
-# Rule-Based Decision Support System for Shipboard Firefighting (2008)
+# Rule-Based Decision Support System for Shipboard Firefighting (2008-2026)
 
-A legacy prototype of a rule-based decision support system developed in 2008 as a student project. The system was designed to assist operators in managing complex emergency situations by collecting available data, analyzing the operational picture, and presenting structured recommendations.
+[![CI](https://github.com/aleksey-lukyanets/firefighting-expert-system/actions/workflows/ci.yml/badge.svg)](https://github.com/aleksey-lukyanets/firefighting-expert-system/actions/workflows/ci.yml)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=aleksey-lukyanets_firefighting-expert-system&metric=coverage)](https://sonarcloud.io/summary/new_code?id=aleksey-lukyanets_firefighting-expert-system)
+[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=aleksey-lukyanets_firefighting-expert-system&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=aleksey-lukyanets_firefighting-expert-system)
+[![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=aleksey-lukyanets_firefighting-expert-system&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=aleksey-lukyanets_firefighting-expert-system)
+[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=aleksey-lukyanets_firefighting-expert-system&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=aleksey-lukyanets_firefighting-expert-system)
+[![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=aleksey-lukyanets_firefighting-expert-system&metric=ncloc)](https://sonarcloud.io/summary/new_code?id=aleksey-lukyanets_firefighting-expert-system)
+
+A prototype of a rule-based decision support system developed in 2008 as a student project, and refactored in 2026. The system was designed to assist operators in managing complex emergency situations by collecting available data, analyzing the operational picture, and presenting structured recommendations.
+
+### Informal note
+
+> Feel free to think of this application as an interactive firefighting game aboard a large vessel. Step into the role of the ship's damage control officer, and take every measure to save the vessel and her crew — free of any real-world consequences or liability. Have fun.
 
 ### Quick start
 
-Just double-click `run.bat`. On the first run the application will automatically download a portable Java 8 (≈80 MB). Subsequent launches will start immediately.
+Just double-click `run.bat`. On the first run the application will automatically download a portable Java 17 JRE (a ~39 MB download, ~110 MB unpacked). Subsequent launches will start immediately.
 
 <br/>
 <p align="center">
@@ -23,8 +34,9 @@ Just double-click `run.bat`. On the first run the application will automatically
 - [Technical Stack](#technical-stack)
 - [Project Structure](#project-structure)
 - [Limitations](#limitations)
-- [Refactoring and Modernization Roadmap](#refactoring-and-modernization-roadmap)
+- [Refactoring Roadmap](#refactoring-roadmap)
 - [License](#license)
+- [Acknowledgments](#acknowledgments)
 
 ## Project Overview
 
@@ -85,15 +97,23 @@ Overall, the data-driven forward-chaining nature of CLIPS allows the expert syst
 
 ## Modernization (2026)
 
-To enable execution on modern systems, the following changes were introduced:
+**Getting it to run on modern systems:**
 * Migration to Gradle as the build automation tool
-* Integration of a portable 32-bit Java 8 JRE due to the legacy 32-bit `CLIPSJNI.dll`. The project uses CLIPSJNI version 0.1 (the earliest official release). Since no official 64-bit CLIPSJNI binding was ever published, migration to a 64-bit JVM is currently blocked at the native integration layer.
+* Integration of a portable 32-bit Java 17 JRE due to the legacy 32-bit `CLIPSJNI.dll`. The project uses CLIPSJNI version 0.1 (the earliest official release). Since no official 64-bit CLIPSJNI binding was ever published, migration to a 64-bit JVM is currently blocked at the native integration layer.
 * UTF-8 encoding configuration
 * Minor adjustments for compatibility with current Windows environments
 * Added support for English, German and Dutch languages (in addition to the original Russian) for the user interface and deck plans
 * CLIPS rule engine output (inference logs and messages) remains in Russian only, as localization was not applied to the expert system console output
 
-The original application logic, rule base, and user interface structure have been fully preserved.
+**Making it maintainable** (a larger effort that followed):
+* The scenario data — compartments, bulkheads, doors, sensors, hydrants, extinguishers, evacuation routes, on-map control placement and drawing geometry — was extracted out of `feis.clp` and the Java sources into declarative YAML (`src/main/resources/config/`), validated at startup against JSON schemas generated from the DTOs themselves
+* A layered package structure (`domain ← config ← clips ← gui ← app`) enforced against compiled bytecode by an ArchUnit test, so a layering violation fails the build rather than surfacing in review
+* An orchestration layer between the UI and the engine, split into a write side (`ClipsReportService`) and a read side (`ClipsReadOnlyService`), with typed domain objects replacing raw string parsing of CLIPS responses
+* Automated tests across four source sets (see [Project Structure](#project-structure)), including integration tests against the real CLIPS engine and a golden-master check that diffs full inference results for seven fire scenarios against recorded baselines
+
+The original rule base and the system's externally observable behavior are preserved: the golden-master baselines are byte-for-byte identical across the refactoring. The Java code structure around it has changed substantially.
+
+The original 2008 codebase — adapted only enough to build and run with tools current as of 2026, plus localized into 4 languages — is preserved as-is on the `good_old_2008` branch, a snapshot of the project before the modernization described below.
 
 ## How to Run
 
@@ -106,7 +126,7 @@ The simplest way to run the application is to use the provided batch script:
 ./run.bat
 ```
 
-On the **first run**, the application will automatically download a portable 32-bit Java 8 JRE (~80 MB). This happens only once.
+On the **first run**, the application will automatically download a portable 32-bit Java 17 JRE (a ~39 MB download that unpacks to ~110 MB). This happens only once.
 
 ### Selecting Application Language
 
@@ -136,9 +156,8 @@ For developers or CI environments, you can also run the application directly thr
 
 ### What Happens on First Launch
 
-1. Gradle downloads a portable 32-bit JRE 8 into the `jre-8-32/` directory.
-2. The `prepareRuntime` task copies `CLIPSJNI.dll` and the `clips/` directory (containing `feis.clp`) into the project root.
-3. The application starts using the embedded JRE and loads the CLIPS rule base.
+1. Gradle downloads a portable 32-bit JRE 17 into the `jre-17-32/` directory and verifies it really is 32-bit.
+2. The application starts on that JRE with `CLIPSJNI.dll` on the native library path, and loads the CLIPS rule base (`feis.clp`) from the classpath.
 
 Subsequent launches are immediate and do not require an internet connection.
 
@@ -159,56 +178,68 @@ Subsequent launches are immediate and do not require an internet connection.
 - **Rule Engine**: forward-chaining (via legacy CLIPSJNI 0.1 binding)
 - **Native Integration**: 32-bit `CLIPSJNI.dll` (official early version from 2008)
 - **User Interface**: Java Swing (original 2008 implementation)
-- **Build System**: Gradle 8+
-- **Java Compatibility**: Compiled for Java 8 (`-source 8 -target 8`), preserving the original Java 6-era coding style
+- **Build System**: Gradle 9.6.1 (wrapper included), with a version catalog and dependency locking
+- **Java**: 17 toolchain. The original Java 6-era style has been progressively replaced — the code now uses records, sealed interfaces and pattern matching. The 32-bit *runtime* constraint comes from `CLIPSJNI.dll`, not from the language level.
+- **Testing**: JUnit 5, Hamcrest, Mockito, ArchUnit
 
 ## Project Structure
 
+See [`src/main/java/README.md`](src/main/java/README.md) for the architecture map — the dependency rule, per-package responsibilities, and the cross-cutting concepts that span layers.
+
 ```
-src/main/java/                  # Application source code
+src/main/java/
+    ├── app/                       # Composition root — entry point (Main)
+    ├── clips/                     # CLIPS/CLIPSJNI integration — engine access, report/read-only services
+    ├── config/                    # YAML configuration loading, schema generation, validation
+    ├── domain/                    # Domain model — locations, links, topology, registries
+    ├── geometry/                  # Coordinate primitives (Point, Polygon, Polyline)
+    ├── gui/                       # Swing UI — deck map, solution panel, i18n, main window
+    └── util/                      # Small shared utilities (resource loading, test-visibility marker)
+
 src/main/resources/
-    └── clips                     # CLIPS rule base (core knowledge)
-        └── feis.clp
-    ├── map_en.png                # Deck plan (English)
-    ├── map_ru.png                # Deck plan (Russian)
-    ├── map_de.png                # Deck plan (German)
-    ├── map_nl.png                # Deck plan (Dutch)
-    └── i18n/                     # Localization resources
+    ├── clips/feis.clp             # CLIPS rule base (core knowledge)
+    ├── config/                    # Scenario data as YAML + generated JSON schemas (schemas/)
+    ├── images/                    # Deck plan images, one per supported language
+    └── i18n/                      # Localization resources
+
+src/test/                       # Unit tests (64-bit, no CLIPS engine)
+src/testIntegration/            # GUI/boundary integration tests (64-bit, engine excluded)
+src/testClips/                  # Integration tests against the real engine (32-bit) + golden baselines
+src/testFixtures/               # Shared fakes/builders used by the suites above
+
 lib/
     ├── CLIPSJNI.dll              # Core CLIPS rule engine library
     └── CLIPSJNI.jar              # JNI wrapper for CLIPS
+
 build.gradle
+AGENTS.md / CODESTYLE.md / DOCSTYLE.md   # Conventions for agents and humans working on the code
 run.bat                         # Primary launcher for end users
-jre-8-32/                       # Portable 32-bit JRE (downloaded automatically)
+jre-17-32/                      # Portable 32-bit JRE (downloaded automatically)
 ```
 
 ## Limitations
 
 This is an educational prototype developed in the late 2000s. It is not intended for operational use.
 
-The codebase reflects architectural patterns, coding practices, and engineering constraints typical of its time, including:
-- Tight coupling between the user interface and domain logic
-- Limited error handling and absence of automated tests
-- Dependence on the earliest 32-bit CLIPSJNI binding (version 0.1), for which no official 64-bit version was ever released
-- Design priorities focused on demonstrating rule-based reasoning rather than long-term maintainability
+Constraints inherited from the original and still in force:
+- Dependence on the earliest 32-bit CLIPSJNI binding (version 0.1), for which no official 64-bit version was ever released — this dictates the portable 32-bit JRE and keeps the engine-facing tests out of the default build
 - CLIPS rule engine output (inference traces and messages printed by rules) is hardcoded in Russian; localization was not applied to the expert system console output
+- The rule base itself remains 2008-era: it was preserved deliberately rather than rewritten, so its own structure and vocabulary reflect the original design priorities — demonstrating rule-based reasoning rather than long-term maintainability
 
-## Refactoring and Modernization Roadmap
+The Java code around the rule base no longer reflects its 2008 form: the UI/domain coupling, the absence of tests, and the raw-string interaction with the engine described in earlier versions of this document have since been addressed (see [Modernization](#modernization-2026)).
+
+## Refactoring Roadmap
 
 The project is undergoing a structured modernization effort aimed at improving maintainability, testability, and long-term viability while preserving the original 2008 logic and behavior.
 
-The following roadmap outlines the planned sequence of changes:
-
-| Step | Action | Dependencies | Complexity | Goal |
-|------|--------|--------------|------------|------|
-| 1 | Introduce `ClipsEnvironment` interface with JNA-based implementation | — | Medium | Replace the legacy `CLIPSJNI` binding with a clean, controllable abstraction layer |
-| 2 | Replace all direct usage of `CLIPSJNI.Environment` with `ClipsEnvironment` | 1 | Low | Isolate the project from the outdated JNI binding |
-| 3 | Eliminate `goto` statements by extracting logic into dedicated methods | — | Medium | Improve code readability and remove a major source of technical debt |
-| 4 | Generalize button positioning and visibility methods on the map | 3 | Medium | Reduce boilerplate code in the UI layer related to map elements |
-| 5 | Introduce `ClipsInteractionService` | 2 | Medium | Create a dedicated orchestration layer between the UI and the CLIPS engine |
-| 6 | Add automated tests for CLIPS interaction | 5 | Medium | Establish test coverage for the core decision-making logic |
-| 7 | Migrate from 32-bit to 64-bit JVM | 1, 5 | High | Remove the legacy portable 32-bit JRE and simplify the runtime environment |
-| 8 | Gradually introduce typed data models (DTOs) | 5 | Medium | Reduce reliance on raw string parsing from CLIPS responses |
+| Step | Action | Status | Goal |
+|------|--------|--------|------|
+| 1    | Replace the legacy in-process `CLIPSJNI` binding with CLIPS running as a separate process, behind a new `ClipsEnvironment` abstraction | Open | Get rid of the 32-bit `CLIPSJNI.dll` binding |
+| 2    | Migrate from 32-bit to 64-bit JVM | Needs 1 | Remove the legacy portable 32-bit JRE and simplify the runtime environment |
+| 3    | Add an on-map legend explaining the deck-plan symbols and markers | Open | Make the operator UI more discoverable, without relying on prior knowledge of the notation |
+| 4    | Wire up a click reaction for the `FIRE_HOSE` hydrant buttons | Open | Buttons already render one per allocated hydrant outlet; clicking currently only toggles local Swing state — add the write-back so the operator can report a hose as deployed, see [`clips/INACTIVE.md`](src/main/java/clips/INACTIVE.md) |
+| 5    | Finish the portable-extinguisher UI (`ExtinguisherButtonGroup` button placement + enabling its `MapLayerVisibilityManager` group) | Open | The recommend/report-back path is already fully implemented in CLIPS and Java; only the button placement data and its visibility wiring are missing, see [`clips/INACTIVE.md`](src/main/java/clips/INACTIVE.md) |
+| 6    | Finish border-routed hydrant assignment (`ext-edge`/`ext-graph`) and wire up the `EXT_*` button UI | Open | The routing graph and plan are already computed in `feis.clp`, but the final hydrant-title assignment rule was never written, and (like step 4) the three `HydrExt*` groups have no click/report-back interaction, see [`clips/INACTIVE.md`](src/main/java/clips/INACTIVE.md) |
 
 ## License
 
@@ -216,4 +247,4 @@ This project is provided for educational and historical purposes only.
 
 ## Acknowledgments
 
-The author would like to express warm gratitude to Prof. Dr. Oleg V. Khrutsky for his thoughtful technical supervision of this project during its original development as a student work. The work was carried out at Saint Petersburg State Marine Technical University, Russia’s leading specialized institution for the education of engineers across the full range of marine technology—from shipbuilding and naval architecture to related technical and regulatory domains. The author is grateful for the rigorous engineering education received there, which provided the foundation for the author’s subsequent engineering path.
+The author would like to express warm gratitude to Prof. Dr. Oleg V. Khrutsky for his thoughtful technical supervision of this project during its original development as a student work. The work was carried out at Saint Petersburg State Marine Technical University, Russia’s leading specialized institution for the education of engineers across the full range of marine technology—from shipbuilding and naval architecture to related technical and regulatory domains. The author is grateful for the high-level engineering education received there, which provided the foundation for the author’s subsequent engineering path.

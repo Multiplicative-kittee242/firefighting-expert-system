@@ -1,0 +1,509 @@
+{
+  "$schema" : "http://json-schema.org/draft-07/schema#",
+  "definitions" : {
+    "CompartmentType" : {
+      "type" : "string",
+      "enum" : [ "POST", "SERVICE", "AUXILIARY", "ENGINE_ROOM", "UNINHABITED" ]
+    },
+    "Entry(GroupKey,HydrantButtonGroupSpec)" : {
+      "type" : "object",
+      "properties" : {
+        "getKey()" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/GroupKey"
+          } ]
+        },
+        "getValue()" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/HydrantButtonGroupSpec"
+          } ]
+        },
+        "setValue(HydrantButtonGroupSpec)" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/HydrantButtonGroupSpec"
+          } ]
+        }
+      },
+      "additionalProperties" : false
+    },
+    "ExplosiveMaterial" : {
+      "type" : "string",
+      "enum" : [ "CHEMICAL_REAGENT", "DIESEL_OIL", "COMPRESSED_AIR" ]
+    },
+    "FlammableMaterial" : {
+      "type" : "string",
+      "enum" : [ "MACHINE_OIL", "WORKING_CLOTHES" ]
+    },
+    "GroupKey" : {
+      "type" : "string",
+      "enum" : [ "FIRE_SENSOR_GROUP", "FIRE_BUTTON_GROUP", "EVACUATION_GROUP", "VENTILATION_GROUP", "DOOR_SEALING_GROUP", "EXPLOSION_GROUP", "FLAMMABLE_GROUP", "MACHINERY_DAMAGE_GROUP", "FRONTLINE_BALANCE_GROUP", "HYDRANT_OUTLETS_GROUP", "FIREFIGHTING_STEPS_GROUP", "EXTINGUISHERS_GROUP", "FIRE_HOSE", "HYDR_EXT", "HYDR_EXT_B", "HYDR_EXT_B_FROM" ]
+    },
+    "GroupLayerSpec" : {
+      "type" : "object",
+      "properties" : {
+        "initialVisibility" : {
+          "type" : "boolean"
+        },
+        "key" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/GroupKey"
+          } ]
+        },
+        "initialVisibility()" : {
+          "type" : "boolean"
+        },
+        "key()" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/GroupKey"
+          } ]
+        }
+      },
+      "additionalProperties" : false
+    },
+    "HydrantButtonGroupSpec" : {
+      "type" : "object",
+      "properties" : {
+        "configs" : {
+          "type" : [ "array", "null" ],
+          "items" : {
+            "$ref" : "#/definitions/HydrantPlacement"
+          }
+        },
+        "hydrantOutlets" : {
+          "type" : [ "array", "null" ],
+          "items" : {
+            "$ref" : "#/definitions/HydrantOutlets"
+          }
+        },
+        "key" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/GroupKey"
+          } ]
+        },
+        "variableWidth" : {
+          "type" : "boolean"
+        },
+        "configs()" : {
+          "type" : [ "array", "null" ],
+          "items" : {
+            "$ref" : "#/definitions/HydrantPlacement"
+          }
+        },
+        "hydrantOutlets()" : {
+          "type" : [ "array", "null" ],
+          "items" : {
+            "$ref" : "#/definitions/HydrantOutlets"
+          }
+        },
+        "key()" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/GroupKey"
+          } ]
+        },
+        "variableWidth()" : {
+          "type" : "boolean"
+        }
+      },
+      "additionalProperties" : false
+    },
+    "HydrantOutlets" : {
+      "type" : "object",
+      "properties" : {
+        "location" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/Location"
+          } ]
+        },
+        "outlets" : {
+          "type" : "integer"
+        },
+        "title" : {
+          "type" : [ "string", "null" ]
+        },
+        "getLocation()" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/Location"
+          } ]
+        },
+        "getOutlets()" : {
+          "type" : "integer"
+        },
+        "getTitle()" : {
+          "type" : [ "string", "null" ]
+        }
+      },
+      "additionalProperties" : false
+    },
+    "HydrantPlacement" : {
+      "type" : "object",
+      "properties" : {
+        "code" : {
+          "type" : [ "string", "null" ]
+        },
+        "count" : {
+          "type" : "integer"
+        },
+        "position" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/Point"
+          } ]
+        },
+        "code()" : {
+          "type" : [ "string", "null" ]
+        },
+        "count()" : {
+          "type" : "integer"
+        },
+        "position()" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/Point"
+          } ]
+        }
+      },
+      "additionalProperties" : false
+    },
+    "Location" : {
+      "type" : "object",
+      "properties" : {
+        "area" : {
+          "type" : "number"
+        },
+        "code" : {
+          "type" : [ "string", "null" ]
+        },
+        "explosiveMaterial" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/ExplosiveMaterial"
+          } ]
+        },
+        "tank" : {
+          "type" : "integer"
+        },
+        "type" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/CompartmentType"
+          } ]
+        },
+        "ventilationType" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/VentilationType"
+          } ]
+        },
+        "getArea()" : {
+          "type" : "number"
+        },
+        "getBurningMaterial()" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/Optional(FlammableMaterial)"
+          } ]
+        },
+        "getCode()" : {
+          "type" : [ "string", "null" ]
+        },
+        "getExplosiveMaterial()" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/Optional(ExplosiveMaterial)"
+          } ]
+        },
+        "getTank()" : {
+          "type" : "integer"
+        },
+        "getType()" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/CompartmentType"
+          } ]
+        },
+        "getVentilationType()" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/Optional(VentilationType)"
+          } ]
+        },
+        "hasChemicalSuppression()" : {
+          "type" : "boolean"
+        },
+        "hasMachinery()" : {
+          "type" : "boolean"
+        }
+      },
+      "additionalProperties" : false
+    },
+    "Map(GroupKey,HydrantButtonGroupSpec)" : {
+      "type" : "object",
+      "properties" : {
+        "clear()" : false,
+        "compute(GroupKey, BiFunction<Object, Object, HydrantButtonGroupSpec>)" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/HydrantButtonGroupSpec"
+          } ]
+        },
+        "computeIfAbsent(GroupKey, Function<Object, HydrantButtonGroupSpec>)" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/HydrantButtonGroupSpec"
+          } ]
+        },
+        "computeIfPresent(GroupKey, BiFunction<Object, Object, HydrantButtonGroupSpec>)" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/HydrantButtonGroupSpec"
+          } ]
+        },
+        "containsKey(Object)" : {
+          "type" : "boolean"
+        },
+        "containsValue(Object)" : {
+          "type" : "boolean"
+        },
+        "entrySet()" : {
+          "type" : [ "array", "null" ],
+          "items" : {
+            "$ref" : "#/definitions/Entry(GroupKey,HydrantButtonGroupSpec)"
+          }
+        },
+        "forEach(BiConsumer<Object, Object>)" : false,
+        "get(Object)" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/HydrantButtonGroupSpec"
+          } ]
+        },
+        "getOrDefault(Object, HydrantButtonGroupSpec)" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/HydrantButtonGroupSpec"
+          } ]
+        },
+        "isEmpty()" : {
+          "type" : "boolean"
+        },
+        "keySet()" : {
+          "type" : [ "array", "null" ],
+          "items" : {
+            "$ref" : "#/definitions/GroupKey"
+          }
+        },
+        "merge(GroupKey, HydrantButtonGroupSpec, BiFunction<Object, Object, HydrantButtonGroupSpec>)" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/HydrantButtonGroupSpec"
+          } ]
+        },
+        "put(GroupKey, HydrantButtonGroupSpec)" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/HydrantButtonGroupSpec"
+          } ]
+        },
+        "putAll(Map<GroupKey, HydrantButtonGroupSpec>)" : false,
+        "putIfAbsent(GroupKey, HydrantButtonGroupSpec)" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/HydrantButtonGroupSpec"
+          } ]
+        },
+        "remove(Object)" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/HydrantButtonGroupSpec"
+          } ]
+        },
+        "remove(Object, Object)" : {
+          "type" : "boolean"
+        },
+        "replace(GroupKey, HydrantButtonGroupSpec)" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/HydrantButtonGroupSpec"
+          } ]
+        },
+        "replace(GroupKey, HydrantButtonGroupSpec, HydrantButtonGroupSpec)" : {
+          "type" : "boolean"
+        },
+        "replaceAll(BiFunction<Object, Object, HydrantButtonGroupSpec>)" : false,
+        "size()" : {
+          "type" : "integer"
+        },
+        "values()" : {
+          "type" : [ "array", "null" ],
+          "items" : {
+            "$ref" : "#/definitions/HydrantButtonGroupSpec"
+          }
+        }
+      },
+      "additionalProperties" : false
+    },
+    "Optional(ExplosiveMaterial)" : {
+      "type" : "object",
+      "properties" : {
+        "get()" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/ExplosiveMaterial"
+          } ]
+        },
+        "isPresent()" : {
+          "type" : "boolean"
+        },
+        "orElse(ExplosiveMaterial)" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/ExplosiveMaterial"
+          } ]
+        }
+      },
+      "additionalProperties" : false
+    },
+    "Optional(FlammableMaterial)" : {
+      "type" : "object",
+      "properties" : {
+        "get()" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/FlammableMaterial"
+          } ]
+        },
+        "isPresent()" : {
+          "type" : "boolean"
+        },
+        "orElse(FlammableMaterial)" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/FlammableMaterial"
+          } ]
+        }
+      },
+      "additionalProperties" : false
+    },
+    "Optional(VentilationType)" : {
+      "type" : "object",
+      "properties" : {
+        "get()" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/VentilationType"
+          } ]
+        },
+        "isPresent()" : {
+          "type" : "boolean"
+        },
+        "orElse(VentilationType)" : {
+          "anyOf" : [ {
+            "type" : "null"
+          }, {
+            "$ref" : "#/definitions/VentilationType"
+          } ]
+        }
+      },
+      "additionalProperties" : false
+    },
+    "Point" : {
+      "type" : "object",
+      "properties" : {
+        "x" : {
+          "type" : "integer"
+        },
+        "y" : {
+          "type" : "integer"
+        },
+        "x()" : {
+          "type" : "integer"
+        },
+        "y()" : {
+          "type" : "integer"
+        }
+      },
+      "additionalProperties" : false
+    },
+    "VentilationType" : {
+      "type" : "string",
+      "enum" : [ "BASIC", "SMOKE_CONTROL", "TRANSIT" ]
+    }
+  },
+  "type" : "object",
+  "properties" : {
+    "group-layers" : {
+      "type" : [ "array", "null" ],
+      "items" : {
+        "$ref" : "#/definitions/GroupLayerSpec"
+      }
+    },
+    "hydrant-button-groups" : {
+      "type" : [ "array", "null" ],
+      "items" : {
+        "$ref" : "#/definitions/HydrantButtonGroupSpec"
+      }
+    },
+    "group-layers()" : {
+      "type" : [ "array", "null" ],
+      "items" : {
+        "$ref" : "#/definitions/GroupLayerSpec"
+      }
+    },
+    "hydrant-button-groups()" : {
+      "type" : [ "array", "null" ],
+      "items" : {
+        "$ref" : "#/definitions/HydrantButtonGroupSpec"
+      }
+    },
+    "hydrantButtonGroupSpecs()" : {
+      "anyOf" : [ {
+        "type" : "null"
+      }, {
+        "$ref" : "#/definitions/Map(GroupKey,HydrantButtonGroupSpec)"
+      } ]
+    }
+  },
+  "additionalProperties" : false
+}
