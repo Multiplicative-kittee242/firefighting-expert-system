@@ -1,0 +1,211 @@
+plugins {
+    id 'java'
+}
+
+// Compiler settings to build the original 2008-era Java 1.6 source code
+// on a modern JDK. We explicitly target Java 1.6 bytecode and source level.
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.compilerArgs.addAll(['-source', '8', '-target', '8'])
+}
+
+// =====================================================
+// Portable 32-bit Java 8 JRE (for legacy CLIPSJNI.dll compatibility)
+//
+// This setup allows the project to run on any modern 64-bit Windows machine
+// with a single command, without requiring any pre-installed Java.
+//
+// On first run, Gradle will automatically download a portable 32-bit JRE 8
+// from Adoptium (Temurin) into the "jre-8-32" folder (~80 MB download, one-time only).
+// Subsequent runs use the local copy and do not require internet.
+// =====================================================
+
+def portableJreVersion = '8u402-b06'   // older Adoptium build that still publishes the 32-bit JRE asset
+def jreFileVersion = '8u402b06'
+def portableJreUrl = "https://github.com/adoptium/temurin8-binaries/releases/download/jdk${portableJreVersion}/OpenJDK8U-jre_x86-32_windows_hotspot_${jreFileVersion}.zip"
+def jreZip = file("$buildDir/downloads/jre-8-32.zip")
+def jreDir = file('jre-8-32')
+
+tasks.register('downloadPortableJre') {
+    group = 'runtime'
+    description = 'Downloads a portable 32-bit Java 8 JRE (required to load the legacy 32-bit CLIPSJNI.dll)'
+
+    doLast {
+        jreZip.parentFile.mkdirs()
+
+        if (!jreZip.exists()) {
+            println "First-time setup: Downloading portable 32-bit Java 8 JRE (~80 MB). This happens only once."
+            println "Source: $portableJreUrl"
+
+            new URL(portableJreUrl).withInputStream { input ->
+                jreZip.withOutputStream { output -> output << input }
+            }
+
+            def sizeMB = (jreZip.length() / 1024 / 1024).round(1)
+            println "Download completed: ${sizeMB} MB"
+        }
+    }
+}
+
+tasks.register('extractPortableJre') {
+    group = 'runtime'
+    description = 'Extracts the portable 32-bit JRE into the jre-8-32/ directory'
+    dependsOn downloadPortableJre
+
+    doLast {
+        def javaExe = file("$jreDir/bin/java.exe")
+
+        if (!javaExe.exists()) {
+            println "Extracting portable 32-bit JRE..."
+
+            if (jreDir.exists()) {
+                jreDir.deleteDir()
+            }
+
+            ant.unzip(src: jreZip, dest: buildDir, overwrite: true)
+
+            def extractedRoot = fileTree(dir: buildDir, include: '**/bin/java.exe').files[0].parentFile.parentFile
+            extractedRoot.renameTo(jreDir)
+
+            println "Portable 32-bit JRE ready."
+        }
+    }
+}
+
+tasks.named('extractPortableJre').configure {
+    notCompatibleWithConfigurationCache(
+            "Uses ant.unzip and dynamic file resolution which are not compatible with configuration cache"
+    )
+}
+
+tasks.register('ensurePortableJre') {
+    group = 'runtime'
+    description = 'Ensures a local 32-bit Java 8 JRE is available (auto-downloads on first run)'
+    dependsOn extractPortableJre
+    // No output here — keep it invisible unless download/extract actually happens above.
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    // When using a real JDK 8 via toolchain, these flags are accepted
+    options.compilerArgs.addAll(['-source', '8', '-target', '8'])
+}
+
+repositories {
+    flatDir {
+        dirs 'lib'
+    }
+}
+
+dependencies {
+    implementation files('lib/CLIPSJNI.jar')
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'Main'
+    }
+}
+
+// Run task that reproduces the original 2008 launch environment.
+// It uses the embedded portable 32-bit JRE so that the legacy 32-bit
+// CLIPSJNI.dll can be loaded successfully.
+//
+// On the very first execution, Gradle will download and prepare the JRE
+// automatically. After that, the application starts immediately.
+// We use a plain Exec task (instead of JavaExec) for runApp.
+// This completely bypasses Gradle's Java toolchain / javaLauncher machinery,
+// which was conflicting with our custom portable 32-bit JRE executable
+// ("Toolchain from `executable` property does not match toolchain from `javaLauncher` property").
+//
+// The portable JRE is a 32-bit JVM required by the ancient CLIPSJNI.dll.
+// We cannot rely on the project's default toolchain (which is 64-bit).
+tasks.register('runApp', Exec) {
+    dependsOn classes, ensurePortableJre, prepareRuntime
+    mustRunAfter prepareRuntime
+
+    workingDir = projectDir
+
+    // The task depends on a dynamically created executable (the portable JRE),
+    // so we mark it incompatible with configuration cache.
+    notCompatibleWithConfigurationCache("Portable JRE path is resolved at execution time after download")
+
+    doFirst {
+        def jreJava = file('jre-8-32/bin/java.exe')
+        if (!jreJava.exists()) {
+            throw new GradleException(
+                "Portable 32-bit JRE not found at ${jreJava.absolutePath}.\n" +
+                "This should have been downloaded by the 'ensurePortableJre' task."
+            )
+        }
+
+        // Build the command line manually for the custom JRE.
+        // Equivalent to: java -Djava.library.path=... -cp ... Main
+        def cp = sourceSets.main.runtimeClasspath.asPath
+
+        // Receive the explicit language argument.
+        def languageArg = ''
+        if (project.hasProperty('appArgs')) {
+            languageArg = project.property('appArgs')
+        }
+
+        commandLine 'cmd', '/c',
+                    'chcp 65001 >nul 2>&1 && ' +
+                    jreJava.absolutePath +
+                    ' -Djava.library.path=lib' +
+                    ' -Dfile.encoding=UTF-8' +
+                    ' -Dconsole.encoding=UTF-8' +
+                    ' -cp ' + cp +
+                    ' Main ' + languageArg
+
+        println "Using embedded 32-bit JRE: ${jreJava}"
+        if (languageArg) {
+            println "Language argument passed: ${languageArg}"
+        }
+    }
+}
+
+// Convenience task to copy the native library and resources to the project root.
+// This replicates the original 2008 layout where CLIPSJNI.dll and CLIPS rules were expected to be next to the application.
+tasks.register('prepareRuntime', Copy) {
+    from('src/main/resources') {
+        include 'clips/**'
+    }
+    from 'lib/CLIPSJNI.dll'
+    into projectDir
+
+    doNotTrackState("Copying files into project root conflicts with configuration cache and incremental build state tracking")
+}
+
+tasks.named('compileJava').configure {
+    mustRunAfter prepareRuntime
+}
+
+tasks.named('processResources').configure {
+    mustRunAfter prepareRuntime
+}
+
+// Verification task for the embedded portable JRE.
+// Usage: gradlew verifyJre
+tasks.register('verifyJre') {
+    dependsOn ensurePortableJre
+    doLast {
+        def javaExe = file('jre-8-32/bin/java.exe')
+
+        if (javaExe.exists()) {
+            println "=== Portable 32-bit JRE verification ==="
+            println "Location   : ${jreDir.absolutePath}"
+            println "Executable : ${javaExe}"
+            println "------------------------------------------"
+
+            // Execute java -version using the portable JRE
+            exec {
+                executable = javaExe
+                args = ['-version']
+            }
+        } else {
+            println "ERROR: Portable JRE not found at expected location: ${jreDir.absolutePath}"
+        }
+    }
+}
+
